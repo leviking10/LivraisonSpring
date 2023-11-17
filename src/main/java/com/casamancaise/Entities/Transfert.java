@@ -1,6 +1,8 @@
-package com.casamancaise.Entities;
+package com.casamancaise.entities;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transfert {
+public class Transfert implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

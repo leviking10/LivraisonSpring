@@ -1,7 +1,6 @@
-package com.casamancaise.Services;
+package com.casamancaise.services;
 
-import com.casamancaise.DTO.ArticleDto;
-import com.casamancaise.DTO.FonctionDto;
+import com.casamancaise.dto.FonctionDto;
 
 import java.util.List;
 

@@ -1,5 +1,5 @@
-package com.casamancaise.Services;
-import com.casamancaise.DTO.ArticleDto;
+package com.casamancaise.services;
+import com.casamancaise.dto.ArticleDto;
 import java.util.List;
 public interface ArticleService {
         ArticleDto createArticle(ArticleDto articleDto);

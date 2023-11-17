@@ -1,9 +1,7 @@
 package com.casamancaise.mapping;
 
-import com.casamancaise.DTO.EntrepotDto;
-import com.casamancaise.DTO.FonctionDto;
-import com.casamancaise.Entities.Entrepot;
-import com.casamancaise.Entities.Fonction;
+import com.casamancaise.dto.EntrepotDto;
+import com.casamancaise.entities.Entrepot;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

@@ -1,15 +1,17 @@
 package com.casamancaise.mapping;
 
-import com.casamancaise.DTO.CanalDistribDto;
-import com.casamancaise.Entities.CanalDistrib;
-import com.casamancaise.Entities.Client;
-import com.casamancaise.Entities.Entrepot;
+import com.casamancaise.dto.CanalDistribDto;
+import com.casamancaise.entities.CanalDistrib;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
-public interface CanalDistribMapper {
-    CanalDistribDto canalDistribToCanalDistribDTO(CanalDistrib canalDistrib);
-    CanalDistrib canalDistribDTOToCanalDistrib(CanalDistribDto canalDistribDTO);
+public interface CanalDistribMapper extends EntityMapper<CanalDistribDto,CanalDistrib> {
+    CanalDistribDto toDto(CanalDistrib entity);
+    
+    CanalDistrib toEntity(CanalDistribDto dto);
+
+    void updateCanalFromDto(CanalDistribDto dto, @MappingTarget CanalDistrib entity);
     default CanalDistrib fromIdToCanaldistrib(Integer id) {
         if (id == null) {
             return null;

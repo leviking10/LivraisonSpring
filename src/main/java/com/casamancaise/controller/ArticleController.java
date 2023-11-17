@@ -1,12 +1,10 @@
 package com.casamancaise.controller;
 
-import com.casamancaise.DTO.ArticleDto;
-import com.casamancaise.Services.ArticleService;
+import com.casamancaise.dto.ArticleDto;
+import com.casamancaise.services.ArticleService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +24,7 @@ public class ArticleController {
     public ArticleDto createArticle(@RequestBody @Valid ArticleDto articleDto) {
         return articleService.createArticle(articleDto);
     }
-
+        
     @GetMapping("/{id}")
     public ArticleDto getArticleById(@PathVariable Long id) {
         return articleService.getArticleById(id);

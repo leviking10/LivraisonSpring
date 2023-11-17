@@ -1,6 +1,6 @@
-package com.casamancaise.Services;
+package com.casamancaise.services;
 
-import com.casamancaise.DTO.EntrepotDto;
+import com.casamancaise.dto.EntrepotDto;
 
 
 import java.util.List;

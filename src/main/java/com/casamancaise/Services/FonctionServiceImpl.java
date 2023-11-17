@@ -1,9 +1,7 @@
-package com.casamancaise.Services;
-import com.casamancaise.DAO.FonctionRepository;
-import com.casamancaise.DTO.ArticleDto;
-import com.casamancaise.DTO.FonctionDto;
-import com.casamancaise.Entities.Article;
-import com.casamancaise.Entities.Fonction;
+package com.casamancaise.services;
+import com.casamancaise.dao.FonctionRepository;
+import com.casamancaise.dto.FonctionDto;
+import com.casamancaise.entities.Fonction;
 import com.casamancaise.mapping.FonctionMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +46,7 @@ public class FonctionServiceImpl implements FonctionService {
         List<Fonction> fonctions= fonctionRepository.findAll();
         return fonctions.stream()
                 .map(fonctionMapper::fonctionToFonctionDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
     @Override
     @Transactional

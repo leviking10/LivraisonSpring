@@ -1,4 +1,4 @@
-package com.casamancaise.Entities;
+package com.casamancaise.entities;
 import jakarta.persistence.*;
 import java.util.Date;
 @Entity

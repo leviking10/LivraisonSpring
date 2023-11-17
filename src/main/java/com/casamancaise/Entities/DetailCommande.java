@@ -1,14 +1,16 @@
-package com.casamancaise.Entities;
+package com.casamancaise.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serializable;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "detail_commande")
-public class DetailCommande {
+public class DetailCommande implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

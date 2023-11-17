@@ -1,9 +1,7 @@
 package com.casamancaise.mapping;
 
-import com.casamancaise.DTO.ArticleDto;
-import com.casamancaise.DTO.FonctionDto;
-import com.casamancaise.Entities.Article;
-import com.casamancaise.Entities.Fonction;
+import com.casamancaise.dto.FonctionDto;
+import com.casamancaise.entities.Fonction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -14,4 +12,12 @@ public interface FonctionMapper {
     Fonction fonctionDTOToFonction(FonctionDto fonctionDTO);
     @Mapping(target = "idFonc", ignore = true)
     void updateFonctionFromDto(FonctionDto dto, @MappingTarget Fonction entity);
+    default Fonction fromId(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Fonction fonction = new Fonction();
+        fonction.setIdFonc(id);
+        return fonction;
+    }
 }

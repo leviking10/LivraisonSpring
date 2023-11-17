@@ -1,6 +1,6 @@
 package com.casamancaise.mapping;
-import com.casamancaise.DTO.TransferDetailsDto;
-import com.casamancaise.Entities.TransferDetails;
+import com.casamancaise.dto.TransferDetailsDto;
+import com.casamancaise.entities.TransferDetails;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

@@ -1,11 +1,11 @@
-package com.casamancaise.Entities;
-
+package com.casamancaise.entities;
 import jakarta.persistence.*;
-
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.*;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Set;
 
 @Entity
 @Table(name = "employes")
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee {
+public class Employee  implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,11 +26,9 @@ public class Employee {
 
     @Column(name = "tel")
     private String telephone;
-
-    @Column(name = "fonction_id")
-    private Long fonctionId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fonction_id", referencedColumnName = "idFonc", insertable = false, updatable = false)
+    @JoinColumn(unique = true)
     private Fonction fonction;
+    @OneToMany(mappedBy = "responsableZone")
+    private Set<Client> clients;
 }

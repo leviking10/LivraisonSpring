@@ -1,16 +1,13 @@
-package com.casamancaise.Services;
-
-import com.casamancaise.DAO.ArticleRepository;
-import com.casamancaise.DTO.ArticleDto;
-import com.casamancaise.Entities.Article;
+package com.casamancaise.services;
+import com.casamancaise.dao.ArticleRepository;
+import com.casamancaise.dto.ArticleDto;
+import com.casamancaise.entities.Article;
 import com.casamancaise.mapping.ArticleMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class ArticleServiceImpl implements ArticleService {
     private final ArticleRepository articleRepository;
@@ -31,7 +28,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Transactional(readOnly = true)
     public ArticleDto getArticleById(Long id) {
         Article article = articleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("cette article n'existe pas" + id));
         return articleMapper.articleToArticleDTO(article);
     }
 
@@ -39,7 +36,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Transactional
     public void deleteArticle(Long id) {
         if (!articleRepository.existsById(id)) {
-            throw new EntityNotFoundException("Article not found with id: " + id);
+            throw new EntityNotFoundException("impossible de supprimer cette article : " + id);
         }
         articleRepository.deleteById(id);
     }
@@ -51,14 +48,14 @@ public class ArticleServiceImpl implements ArticleService {
         List<Article> articles = articleRepository.findAll();
         return articles.stream()
                 .map(articleMapper::articleToArticleDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @Transactional
     public ArticleDto updateArticle(Long id, ArticleDto articleDto) {
         Article existingArticle = articleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Impossible de mettre à jour cette article id: " + id));
         // Utilisez le mapper pour mettre à jour les champs de l'article existant.
         articleMapper.updateArticleFromDto(articleDto, existingArticle);
         // Sauvegardez les modifications

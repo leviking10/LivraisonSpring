@@ -1,7 +1,7 @@
 package com.casamancaise.mapping;
 
-import com.casamancaise.DTO.CommandeDto;
-import com.casamancaise.Entities.Commande;
+import com.casamancaise.dto.CommandeDto;
+import com.casamancaise.entities.Commande;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

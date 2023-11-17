@@ -1,6 +1,6 @@
 package com.casamancaise.mapping;
-import com.casamancaise.DTO.ArticleDto;
-import com.casamancaise.Entities.Article;
+import com.casamancaise.dto.ArticleDto;
+import com.casamancaise.entities.Article;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

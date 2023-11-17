@@ -1,13 +1,15 @@
-package com.casamancaise.Entities;
+package com.casamancaise.entities;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serializable;
 
 @Entity
 @Table(name = "transfer_details")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferDetails {
+public class TransferDetails implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

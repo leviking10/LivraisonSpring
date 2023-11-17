@@ -1,8 +1,10 @@
-package com.casamancaise.Entities;
+package com.casamancaise.entities;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Commande {
+public class Commande implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

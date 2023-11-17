@@ -1,8 +1,9 @@
-package com.casamancaise.Entities;
+package com.casamancaise.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Entity
@@ -11,13 +12,13 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Fonction {
+public class Fonction implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idFonc")
     private Long idFonc;
     @Column(name = "libelle")
     private String libelle;
-    @OneToMany(mappedBy = "fonction", fetch = FetchType.LAZY)
-    private List<Employee> employes;
+    @OneToMany(mappedBy = "fonction")
+    private Set<Employee> employes;
 }

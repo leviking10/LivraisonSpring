@@ -1,6 +1,6 @@
 package com.casamancaise.controller;
-import com.casamancaise.DTO.FonctionDto;
-import com.casamancaise.Services.FonctionService;
+import com.casamancaise.dto.FonctionDto;
+import com.casamancaise.services.FonctionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
