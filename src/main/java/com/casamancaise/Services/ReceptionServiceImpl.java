@@ -1,23 +1,23 @@
 package com.casamancaise.services;
-import com.casamancaise.dao.InventaireRepository;
-import com.casamancaise.dao.MouvementRepository;
-import com.casamancaise.dto.ReceptionStockDto;
+
+import com.casamancaise.dao.*;
 import com.casamancaise.dto.ReceptionDetailDto;
+import com.casamancaise.dto.ReceptionStockDto;
 import com.casamancaise.entities.*;
-import com.casamancaise.mapping.ReceptionStockMapper;
 import com.casamancaise.mapping.ReceptionDetailMapper;
-import com.casamancaise.dao.ReceptionStockRepository;
-import com.casamancaise.dao.ReceptionDetailRepository;
+import com.casamancaise.mapping.ReceptionStockMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-
 @Service
-public class ReceptionService {
-
+@Transactional
+public class ReceptionServiceImpl implements ReceptionService{
+    private static final Logger logger = LoggerFactory.getLogger(ReceptionServiceImpl.class);
     @Autowired
     private ReceptionStockRepository receptionStockRepository;
     @Autowired
@@ -30,29 +30,57 @@ public class ReceptionService {
     private MouvementRepository mouvementRepository;
     @Autowired
     private InventaireRepository inventaireRepository;
-    @Transactional
+    @Override
     public ReceptionStockDto saveReception(ReceptionStockDto receptionStockDto) {
-        // Convert DTO to entity and save it
+        logger.info("Début de la méthode saveReception avec receptionStockDto: {}", receptionStockDto);
+
+        // Convertir DTO en entité et sauvegarder
         ReceptionStock receptionStock = receptionStockMapper.toEntity(receptionStockDto);
-        receptionStock = receptionStockRepository.save(receptionStock); // Now receptionStock has an ID
+        logger.debug("Entité ReceptionStock avant la sauvegarde : {}", receptionStock);
+
+        receptionStock = receptionStockRepository.save(receptionStock);
+        logger.debug("Entité ReceptionStock après la sauvegarde avec ID : {}", receptionStock.getId());
+
+        if (receptionStock.getId() == null) {
+            logger.error("L'ID de ReceptionStock est null après la sauvegarde.");
+            throw new IllegalStateException("L'ID de ReceptionStock ne peut pas être null après la sauvegarde.");
+        }
 
         for (ReceptionDetailDto detailDto : receptionStockDto.getReceptionDetails()) {
-            // Set the saved ReceptionStock to each detail
+            logger.debug("Traitement du ReceptionDetailDto : {}", detailDto);
+
+            if (detailDto.getArticleId() == null) {
+                logger.error("L'ID de l'article est null pour le détail de réception : {}", detailDto);
+                throw new IllegalStateException("L'ID de l'article ne peut pas être null pour le détail de réception.");
+            }
+
             ReceptionDetail detail = receptionDetailMapper.toEntity(detailDto);
-            detail.setReceptionStock(receptionStock); // Now detail knows about the saved receptionStock
-            // Save the detail which now has a reference to the saved receptionStock
+            detail.setReceptionStock(receptionStock); // Associer avec le stock de réception sauvegardé
+
+            logger.debug("Entité ReceptionDetail après conversion du DTO : {}", detail);
+
+            // Vérification supplémentaire pour s'assurer que l'article est bien défini
+            if (detail.getArticle() == null || detail.getArticle().getIdArticle() == null) {
+                logger.error("Article ou ID d'article manquant pour le détail de réception : {}", detail);
+                throw new IllegalStateException("Article ou ID d'article ne peut pas être null pour le détail de réception.");
+            }
+
             detail = receptionDetailRepository.save(detail);
+            logger.debug("Entité ReceptionDetail après la sauvegarde : {}", detail);
+
             updateInventoryAndCreateMovement(detail, receptionStock);
         }
 
-        return receptionStockMapper.toDto(receptionStock);
+        ReceptionStockDto savedReceptionStockDto = receptionStockMapper.toDto(receptionStock);
+        logger.info("Fin de la méthode saveReception avec savedReceptionStockDto : {}", savedReceptionStockDto);
+        return savedReceptionStockDto;
     }
+
 
     private void updateInventoryAndCreateMovement(ReceptionDetail detail, ReceptionStock receptionStock) {
         // Rechercher l'Inventaire existant ou en créer un nouveau si non trouvé
         Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(detail.getArticle().getIdArticle(), receptionStock.getEntrepot().getIdEntre())
                 .orElseGet(() -> new Inventaire(null, receptionStock.getEntrepot(), detail.getArticle(), 0, 0));
-
         int quantityChange = detail.getQuantity();
         if (Etat.CONFORME.equals(detail.getEtat())) {
             inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() + quantityChange);
@@ -122,3 +150,5 @@ public class ReceptionService {
         return receptionStockMapper.toDto(receptionStock);
     }
 }
+
+

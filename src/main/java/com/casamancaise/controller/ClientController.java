@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
-
     private final ClientService clientService;
 
     @Autowired
@@ -25,6 +24,7 @@ public class ClientController {
     public ClientDto createClient(@RequestBody @Valid ClientDto clientDto) {
         return clientService.createClient(clientDto);
     }
+
     @GetMapping("/{id}")
     public ClientDto getClientById(@PathVariable Long id) {
 
@@ -36,14 +36,15 @@ public class ClientController {
 
         return clientService.getAllClients();
     }
+
     @PutMapping("/{id}")
     public ClientDto updateClient(@PathVariable Long id, @RequestBody @Valid ClientDto clientDto) {
-            return clientService.updateClient(id, clientDto);
+        return clientService.updateClient(id, clientDto);
     }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteClient(@PathVariable Long id) {
-
         clientService.deleteClient(id);
     }
 }

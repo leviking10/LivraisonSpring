@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/canals")
 public class CanalDistribController {
-
     private final CanalDistribService canalDistribService;
 
     @Autowired
@@ -29,14 +28,12 @@ public class CanalDistribController {
 
     @GetMapping("/{id}")
     public CanalDistribDto getCanalById(@PathVariable Integer id) {
-
         return canalDistribService.getCanalById(id);
     }
 
     @GetMapping
     @Transactional(readOnly = true)
     public List<CanalDistribDto> getAllCanals() {
-
         return canalDistribService.getAllCanals();
     }
 

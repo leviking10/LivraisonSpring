@@ -14,7 +14,7 @@ public interface EmployeeMapper extends EntityMapper<EmployeeDto,Employee>{
     Employee toEntity(EmployeeDto employeeDto);
     @Mapping(target = "id", ignore = true)
     void updateEmployeeFromDto(EmployeeDto dto, @MappingTarget Employee entity);
-    default Employee FromID(Long id){
+    default Employee fromid(Long id){
         if(id == null){
             return null;
         }

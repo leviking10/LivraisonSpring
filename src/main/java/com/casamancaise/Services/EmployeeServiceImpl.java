@@ -49,7 +49,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         // Convert list of entities to list of DTOs
         return employees.stream()
                 .map(employeeMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

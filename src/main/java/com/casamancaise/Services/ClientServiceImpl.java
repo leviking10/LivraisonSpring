@@ -45,7 +45,7 @@ public class ClientServiceImpl implements ClientService{
                 .map(clientMapper::toDto)
                 .toList();
     }
-/*
+
         @Override
         public ClientDto updateClient(Long id, ClientDto clientDto) {
             Client existingClient = clientRepository.findById(id)
@@ -54,32 +54,6 @@ public class ClientServiceImpl implements ClientService{
             existingClient = clientRepository.save(existingClient);
             return clientMapper.toDto(existingClient);
         }
-*/
-@Override
-public ClientDto updateClient(Long id, ClientDto clientDto) {
-    Client existingClient = clientRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Client not found with id: " + id));
-
-    // Log avant la mise à jour pour confirmer l'état de l'entité
-    log.info("Mise à jour du client avec l'ID: {}, et l'état actuel de l'entité: {}", id, existingClient);
-
-    // Vérifiez que le ClientDto ne contient pas un 'id' différent de celui que vous mettez à jour
-    if (clientDto.getId() != null && !clientDto.getId().equals(id)) {
-        throw new IllegalArgumentException("L'ID du ClientDto ne correspond pas à l'ID de l'entité à mettre à jour.");
-    }
-
-    clientMapper.updateClientFromDto(clientDto, existingClient);
-
-    // Log après la mise à jour pour confirmer les changements
-    log.info("État de l'entité Client après le mappage: {}", existingClient);
-
-    existingClient = clientRepository.save(existingClient);
-
-    // Log après l'enregistrement
-    log.info("Client mis à jour avec succès avec l'état final de l'entité: {}", existingClient);
-
-    return clientMapper.toDto(existingClient);
-}
 
     @Override
     public void deleteClient(Long id) {

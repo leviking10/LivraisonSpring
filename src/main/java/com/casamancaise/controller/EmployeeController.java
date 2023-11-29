@@ -18,11 +18,13 @@ public class EmployeeController {
     public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EmployeeDto createEmployee(@RequestBody @Valid EmployeeDto employeeDto) {
         return employeeService.createEmployee(employeeDto);
     }
+
     @GetMapping("/{id}")
     public EmployeeDto getEmployeeById(@PathVariable Long id) {
         return employeeService.getEmployeeById(id);
@@ -35,7 +37,7 @@ public class EmployeeController {
 
     @PutMapping("/{id}")
     public EmployeeDto updateEmployee(@PathVariable Long id, @RequestBody @Valid EmployeeDto employeeDto) {
-        return employeeService.updateEmployee(id,employeeDto);
+        return employeeService.updateEmployee(id, employeeDto);
     }
 
     @DeleteMapping("/{id}")

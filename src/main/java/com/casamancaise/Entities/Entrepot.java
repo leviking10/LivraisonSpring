@@ -1,8 +1,7 @@
 package com.casamancaise.entities;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.List;
@@ -10,7 +9,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "entrepots")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Entrepot implements Serializable {
@@ -29,6 +29,7 @@ public class Entrepot implements Serializable {
         @OneToMany(mappedBy = "toEntrepot", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<Transfert> transfertsTo;
 
-        @OneToMany(mappedBy = "entrepot", cascade = CascadeType.ALL, orphanRemoval = true)
-        private List<StockUsine> stockUsines;
+        public Entrepot(Integer idEntre) {
+                this.idEntre = idEntre;
+        }
 }

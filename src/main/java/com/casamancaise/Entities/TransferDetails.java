@@ -6,7 +6,8 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "transfer_details")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransferDetails implements Serializable {
@@ -15,20 +16,14 @@ public class TransferDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "article_id", nullable = false)
-    private Long articleId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "article_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "article_id", nullable = false)
     private Article article;
 
     @Column(nullable = false)
     private Integer quantite;
 
-    @Column(name = "transfert_id", nullable = false)
-    private Long transfertId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transfert_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "transfert_id", nullable = false)
     private Transfert transfert;
 }

@@ -24,7 +24,7 @@ public class ArticleController {
     public ArticleDto createArticle(@RequestBody @Valid ArticleDto articleDto) {
         return articleService.createArticle(articleDto);
     }
-        
+
     @GetMapping("/{id}")
     public ArticleDto getArticleById(@PathVariable Long id) {
         return articleService.getArticleById(id);

@@ -1,14 +1,16 @@
 package com.casamancaise.dto;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+@Getter
 @Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArticleDto {
-    private Integer idArticle;
+    private Long idArticle;
     @NotNull(message = "Le champ référence ne peut pas être vide.")
     @Size(min = 3, max = 100, message = "La référence doit comporter entre 3 et 100 caractères.")
     private String refArti;

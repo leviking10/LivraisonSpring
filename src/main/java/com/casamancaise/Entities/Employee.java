@@ -27,8 +27,8 @@ public class Employee  implements Serializable {
     @Column(name = "tel")
     private String telephone;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(unique = true)
+    @JoinColumn(unique = true, name = "fonction_id")
     private Fonction fonction;
-    @OneToMany(mappedBy = "responsableZone")
+    @OneToMany(mappedBy = "responsableZone", fetch = FetchType.LAZY)
     private Set<Client> clients;
 }
