@@ -22,6 +22,8 @@ de la qualité du code.
 #### •	Maintenabilité : 37 "code smells" ont été trouvés, indiquant des opportunités pour améliorer la lisibilité et réduire la dette technique.
 #### •	Duplications : Aucune duplication de code n'a été constatée, ce qui est positif pour la maintenabilité du code.
 ## Recommandations
+
+
 #### •	Refactoring : Les "code smells" identifiés devraient être examinés et corrigés pour éviter toute complexité accrue.
 #### •	Révision de Code : Un processus de revue de code devrait être mis en place pour prévenir l'introduction de nouvelles odeurs de code.
 #### •	Tests et Documentation : Augmenter la couverture des tests et améliorer la documentation du code pour chaque entité et relation.
