@@ -33,6 +33,6 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build and analyze
         env:
-          SONAR_TOKEN: ${{sqp_0afa788121598c52c53d51d9ea67d368bef3e398}}
-          SONAR_HOST_URL: ${{http://localhost:9000/}}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Livraisonspring -Dsonar.projectName='Livraisonspring'
