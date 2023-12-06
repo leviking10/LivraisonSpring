@@ -9,16 +9,15 @@ import com.casamancaise.entities.ReceptionDetail;
 import com.casamancaise.entities.ReceptionStock;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", uses = {ArticleMapper.class,ReceptionStockMapper.class})
+@Mapper(componentModel = "spring", uses = {ArticleMapper.class})
 public interface ReceptionDetailMapper  extends EntityMapper<ReceptionDetailDto, ReceptionDetail>{
+    @Mapping(source = "receptionStock.id",target = "idreceptionStock")
+    @Mapping(source = "article.idArticle",target = "idarticle")
+    ReceptionDetailDto toDto(ReceptionDetail entity);
 
-    @Mapping(source = "receptionStock.id",target = "receptionStockId")
-    @Mapping(source = "article.idArticle",target = "articleId")
-    ReceptionDetailDto toDto(ReceptionDetail entite);
-
-    @Mapping(source = "receptionStockId",target = "receptionStock")
-    @Mapping(source = "articleId",target = "article")
-    ReceptionDetail toEntity(ReceptionDetailDto dtos);
+    @Mapping(source = "idreceptionStock",target = "receptionStock")
+    @Mapping(source = "idarticle",target = "article")
+    ReceptionDetail toEntity(ReceptionDetailDto receptionDetailDto);
     default Etat map(String etat) {
         if (etat == null || etat.isEmpty()) {
             return Etat.CONFORME; // Valeur par défaut si la String est null ou vide
@@ -28,6 +27,14 @@ public interface ReceptionDetailMapper  extends EntityMapper<ReceptionDetailDto,
         } catch (IllegalArgumentException e) {
             return Etat.CONFORME; // Valeur par défaut si la String ne correspond à aucune valeur de l'enum
         }
+    }
+    default ReceptionStock map(Long id) {
+        if (id == null) {
+            return null;
+        }
+        ReceptionStock receptionStock = new ReceptionStock();
+        receptionStock.setId(id);
+        return receptionStock;
     }
     @AfterMapping
     default void updateFromDto(ReceptionDetailDto dto, @MappingTarget ReceptionDetail entity) {

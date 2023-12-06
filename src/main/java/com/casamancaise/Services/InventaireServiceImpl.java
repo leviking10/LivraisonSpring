@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class InventaireServiceImpl implements InventaireService {
 
     private final InventaireRepository inventaireRepository;

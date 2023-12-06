@@ -19,14 +19,26 @@ public class ReceptionStock implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "entrepot_id", nullable = false)
     private Entrepot entrepot;
     private LocalDate dateReception;
     private String quart; // Quart de travail ou session de production
 
     @OneToMany(mappedBy = "receptionStock", cascade = CascadeType.ALL)
-    private List<ReceptionDetail> receptionDetails; // Détails des articles reçus
-    @OneToMany(mappedBy = "receptionStock", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReceptionDetail> receptionDetails;// Détails des articles reçus
+    @OneToMany(mappedBy = "receptionStockMv", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Mouvement> mouvements; // Les mouvements liés à cette réception
+
+    @Override
+    public String toString() {
+        return "ReceptionStock{" +
+                "id=" + id +
+                ", entrepot=" + entrepot +
+                ", dateReception=" + dateReception +
+                ", quart='" + quart + '\'' +
+                ", receptionDetails=" + receptionDetails +
+                ", mouvements=" + mouvements +
+                '}';
+    }
 }

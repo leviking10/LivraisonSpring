@@ -6,7 +6,7 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {EntrepotMapper.class})
+@Mapper(componentModel = "spring", uses = {EntrepotMapper.class,ReceptionDetailMapper.class})
 public interface ReceptionStockMapper extends EntityMapper<ReceptionStockDto, ReceptionStock> {
     @Mapping(source = "entrepot.idEntre", target = "entrepotId")
     ReceptionStockDto toDto(ReceptionStock entity);
@@ -20,4 +20,5 @@ public interface ReceptionStockMapper extends EntityMapper<ReceptionStockDto, Re
         receptionStock.setId(id);
         return receptionStock;
     }
+    void updateFromDto(ReceptionStockDto dto, @MappingTarget ReceptionStock entity);
 }

@@ -50,7 +50,6 @@ public class ArticleServiceImpl implements ArticleService {
         existingArticle = articleRepository.save(existingArticle);
         return articleMapper.toDto(existingArticle);
     }
-
     @Override
     public void deleteArticle(Long id) {
         articleRepository.deleteById(id);

@@ -31,4 +31,15 @@ public class Inventaire implements Serializable {
 
     @Column(nullable = false)
     private Integer quantiteNonConforme;
+
+    @Override
+    public String toString() {
+        return "Inventaire{" +
+                "id=" + id +
+                ", entrepot=" + entrepot +
+                ", article=" + article +
+                ", quantiteConforme=" + quantiteConforme +
+                ", quantiteNonConforme=" + quantiteNonConforme +
+                '}';
+    }
 }

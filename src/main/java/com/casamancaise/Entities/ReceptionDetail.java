@@ -16,10 +16,10 @@ public class ReceptionDetail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "reception_stock_id", nullable = false)
     private ReceptionStock receptionStock;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "article_id", nullable = false)
     private Article article;
     @NotNull
@@ -27,4 +27,15 @@ public class ReceptionDetail implements Serializable {
     @Enumerated(EnumType.STRING)
     @NotNull
     private Etat etat;
+
+    @Override
+    public String toString() {
+        return "ReceptionDetail{" +
+                "id=" + id +
+                ", receptionStock=" + receptionStock +
+                ", article=" + article +
+                ", quantity=" + quantity +
+                ", etat=" + etat +
+                '}';
+    }
 }

@@ -7,12 +7,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
-public interface ArticleMapper extends EntityMapper<ArticleDto, Article> {
+public interface ArticleMapper{
 
     ArticleDto toDto(Article entity);
     Article toEntity(ArticleDto dto);
 
-    default Article fromIdToArticle(Long id) {
+    default Article fromId(Long id) {
         if (id == null) {
             return null;
         }

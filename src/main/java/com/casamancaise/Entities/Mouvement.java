@@ -1,6 +1,11 @@
 package com.casamancaise.entities;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -14,25 +19,18 @@ public class Mouvement implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "inventaire_id") // Assurez-vous que le nom de la colonne correspond à celui dans votre DB
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "inventaire_id")
     private Inventaire inventaire;
-
     @Column(nullable = false) // Assurez-vous que la date de mouvement ne peut pas être nulle
     private LocalDate dateMouvement;
-
     private Integer quantiteChange; // La quantité de l'article pour ce mouvement
-
     private String condition; // La condition de l'article ('conforme' ou 'non conforme')
-
     @Enumerated(EnumType.STRING) // Spécifier le type d'énumération
     private TypeMouvement type; // Le type de mouvement
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "reception_stock_id") // Lier avec la réception de stock
-    private ReceptionStock receptionStock;
-
+    private ReceptionStock receptionStockMv;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transfert_id")
     private Transfert transfert;
@@ -42,4 +40,20 @@ public class Mouvement implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vente_id")
     private Vente vente;
+
+    @Override
+    public String toString() {
+        return "Mouvement{" +
+                "id=" + id +
+                ", inventaire=" + inventaire +
+                ", dateMouvement=" + dateMouvement +
+                ", quantiteChange=" + quantiteChange +
+                ", condition='" + condition + '\'' +
+                ", type=" + type +
+                ", receptionStockMv=" + receptionStockMv +
+                ", transfert=" + transfert +
+                ", dotation=" + dotation +
+                ", vente=" + vente +
+                '}';
+    }
 }

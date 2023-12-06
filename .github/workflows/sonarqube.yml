@@ -1,0 +1,29 @@
+name: SonarQube Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 17
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=<Votre_Project_Key>
+            -Dsonar.host.url=<http://localhost:9000/>
+            -Dsonar.login=${{squ_65957b3d943c8584bc55cd8e65e474548982051e}}

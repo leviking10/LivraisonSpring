@@ -1,10 +1,13 @@
 package com.casamancaise.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDate; // Utilisation de java.time.LocalDate
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -42,13 +45,8 @@ public class Transfert implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private EtatTransfert etat;
-
-    public enum EtatTransfert {
-        EN_COURS,
-        TERMINE,
-        ANNULE
-    }
     // Relation avec Mouvement
     @OneToMany(mappedBy = "transfert", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Mouvement> mouvements;
+
 }

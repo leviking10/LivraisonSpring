@@ -32,11 +32,8 @@ public class Article implements Serializable {
 
     @Column(name = "tonage", length = 20, nullable = false)
     private Double tonage;
-    // Liste des détails de commandes pour cet article
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<DetailCommande> detailsCommandes;
-    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<ReceptionDetail> detailsReceptions;
+    private List<ReceptionDetail> receptionDetails;
     public Article(Long idArticle) {
         this.idArticle = idArticle;
     }

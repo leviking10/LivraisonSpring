@@ -20,10 +20,7 @@ public class Dotation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-
     private String destinataire;
-
     @ManyToOne
     private Article article;
 

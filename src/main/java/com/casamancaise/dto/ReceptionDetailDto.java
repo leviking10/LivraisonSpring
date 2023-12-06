@@ -8,9 +8,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ReceptionDetailDto implements Serializable {
     private Long id;
-    private Long receptionStockId; // On utilise seulement l'ID pour le stock de réception
-    private Long articleId;
+    private Long idreceptionStock; // On utilise seulement l'ID pour le stock de réception
+    private Long idarticle;
     private Integer quantity;
     private Etat etat;
-    private ArticleDto article;
 }

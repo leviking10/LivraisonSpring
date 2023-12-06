@@ -20,7 +20,6 @@ public class Vente implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
     private Client client;
-
     @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailVente> detailVentes;
 
