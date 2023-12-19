@@ -21,6 +21,7 @@ public class TransfertDto {
     private Long vehiculeId; // ID du véhicule utilisé pour le transfert
     private EtatTransfert etat;
     private String reference;
+    private LocalDate ReceptionDate;
     // Liste des détails de transfert, représentée par des DTOs
     private List<TransferDetailsDto> transferDetails;        // ID du véhicule utilisé pour le transfert
 }

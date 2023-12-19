@@ -1,6 +1,4 @@
 package com.casamancaise.dao;
-
-import com.casamancaise.entities.ReceptionStock;
 import com.casamancaise.entities.Transfert;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

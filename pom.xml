@@ -65,7 +65,6 @@
 			<groupId>org.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
@@ -139,7 +138,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>2.0.5</version>
 		</dependency>
-
 		<!-- Binding pour SLF4J avec Logback -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -167,7 +165,6 @@
 			<version>2.2.0</version>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -212,8 +209,6 @@
 					</compilerArgs>
 				</configuration>
 			</plugin>
-
 		</plugins>
 	</build>
-
 </project>

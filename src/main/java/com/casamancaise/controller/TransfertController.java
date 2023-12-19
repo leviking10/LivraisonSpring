@@ -1,5 +1,7 @@
 package com.casamancaise.controller;
 import com.casamancaise.dto.TransfertDto;
+import com.casamancaise.dto.UpdateTransfertDestinataireDto;
+import com.casamancaise.entities.EtatTransfert;
 import com.casamancaise.exeption.EntityNotFoundException;
 import com.casamancaise.services.TransfertService;
 import jakarta.validation.Valid;
@@ -9,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.List;
 @RestController
 @RequestMapping("/api/transferts")
@@ -39,7 +43,31 @@ public class TransfertController {
         List<TransfertDto> transferts = transfertService.getAllTransferts();
         return ResponseEntity.ok(transferts);
     }
-
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TransfertDto> updateTransfertStatus(@PathVariable Long id, @RequestBody EtatTransfert etat) {
+        TransfertDto updatedTransfert = transfertService.updateTransfertStatus(id, etat);
+        return ResponseEntity.ok(updatedTransfert);
+    }
+    @PatchMapping("/{id}/recevoir")
+    public ResponseEntity<TransfertDto> recevoirTransfert(@PathVariable Long id, @RequestBody LocalDate dateLivraison) {
+        try {
+            TransfertDto updatedTransfert = transfertService.recevoirTransfert(id, dateLivraison);
+            return ResponseEntity.ok(updatedTransfert);
+        } catch (RuntimeException e) {
+            // Gérer les exceptions
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+    @PatchMapping("/{id}/destinataire")
+    public ResponseEntity<TransfertDto> updateTransfertDestinataire(@PathVariable Long id, @RequestBody UpdateTransfertDestinataireDto updateDto) {
+        try {
+            TransfertDto updatedTransfert = transfertService.updateTransfertDestinataire(id, updateDto.getNouveauTypeDestinataire(), updateDto.getNouveauDestinataireId());
+            return ResponseEntity.ok(updatedTransfert);
+        } catch (RuntimeException e) {
+            // Gérer les exceptions (par exemple, transfert non trouvé, mise à jour non autorisée, etc.)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransfert(@PathVariable Long id) {
         transfertService.deleteTransfert(id);
