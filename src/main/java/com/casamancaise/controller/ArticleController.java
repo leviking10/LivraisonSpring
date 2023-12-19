@@ -1,5 +1,4 @@
 package com.casamancaise.controller;
-
 import com.casamancaise.dto.ArticleDto;
 import com.casamancaise.services.ArticleService;
 import jakarta.validation.Valid;
@@ -13,12 +12,10 @@ import java.util.List;
 @RequestMapping("/api/articles")
 public class ArticleController {
     private final ArticleService articleService;
-
     @Autowired
     public ArticleController(ArticleService articleService) {
         this.articleService = articleService;
     }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ArticleDto createArticle(@RequestBody @Valid ArticleDto articleDto) {

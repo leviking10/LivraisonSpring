@@ -1,13 +1,8 @@
 package com.casamancaise.entities;
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.*;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "mouvement")
@@ -19,41 +14,15 @@ public class Mouvement implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventaire_id")
     private Inventaire inventaire;
-    @Column(nullable = false) // Assurez-vous que la date de mouvement ne peut pas être nulle
-    private LocalDate dateMouvement;
+    @Column(nullable = false) // Assurez que la date de mouvement ne peut pas être nulle
+    private LocalDateTime dateMouvement;
     private Integer quantiteChange; // La quantité de l'article pour ce mouvement
     private String condition; // La condition de l'article ('conforme' ou 'non conforme')
     @Enumerated(EnumType.STRING) // Spécifier le type d'énumération
     private TypeMouvement type; // Le type de mouvement
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "reception_stock_id") // Lier avec la réception de stock
-    private ReceptionStock receptionStockMv;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transfert_id")
-    private Transfert transfert;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dotation_id")
-    private Dotation dotation;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vente_id")
-    private Vente vente;
-
-    @Override
-    public String toString() {
-        return "Mouvement{" +
-                "id=" + id +
-                ", inventaire=" + inventaire +
-                ", dateMouvement=" + dateMouvement +
-                ", quantiteChange=" + quantiteChange +
-                ", condition='" + condition + '\'' +
-                ", type=" + type +
-                ", receptionStockMv=" + receptionStockMv +
-                ", transfert=" + transfert +
-                ", dotation=" + dotation +
-                ", vente=" + vente +
-                '}';
-    }
+    @Column(nullable = false)
+    private String reference;
 }

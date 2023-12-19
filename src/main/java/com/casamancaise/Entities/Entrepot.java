@@ -26,9 +26,6 @@ public class Entrepot implements Serializable {
         @OneToMany(mappedBy = "fromEntrepot", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<Transfert> transfertsFrom;
 
-        @OneToMany(mappedBy = "toEntrepot", cascade = CascadeType.ALL, orphanRemoval = true)
-        private List<Transfert> transfertsTo;
-
         public Entrepot(Integer idEntre) {
                 this.idEntre = idEntre;
         }

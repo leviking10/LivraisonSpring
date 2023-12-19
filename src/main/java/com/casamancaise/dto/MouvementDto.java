@@ -1,14 +1,10 @@
 package com.casamancaise.dto;
-
-import com.casamancaise.entities.Mouvement;
 import com.casamancaise.entities.TypeMouvement;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,8 +16,5 @@ public class MouvementDto implements Serializable {
     private Integer quantiteChange;
     private String condition;
     private TypeMouvement type;
-    private Long receptionstockId;
-    private Long transfertId;
-    private Long dotationId;
-    private Long venteId;
+    private String reference;
 }

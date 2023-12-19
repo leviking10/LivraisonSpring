@@ -6,10 +6,9 @@ import com.casamancaise.dto.ReceptionStockDto;
 import com.casamancaise.entities.Article;
 import com.casamancaise.entities.Etat;
 import com.casamancaise.entities.ReceptionDetail;
-import com.casamancaise.entities.ReceptionStock;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", uses = {ArticleMapper.class})
+@Mapper(componentModel = "spring", uses = {ArticleMapper.class,ReceptionStockMapper.class})
 public interface ReceptionDetailMapper  extends EntityMapper<ReceptionDetailDto, ReceptionDetail>{
     @Mapping(source = "receptionStock.id",target = "idreceptionStock")
     @Mapping(source = "article.idArticle",target = "idarticle")
@@ -28,23 +27,12 @@ public interface ReceptionDetailMapper  extends EntityMapper<ReceptionDetailDto,
             return Etat.CONFORME; // Valeur par défaut si la String ne correspond à aucune valeur de l'enum
         }
     }
-    default ReceptionStock map(Long id) {
-        if (id == null) {
-            return null;
-        }
-        ReceptionStock receptionStock = new ReceptionStock();
-        receptionStock.setId(id);
-        return receptionStock;
-    }
+
     @AfterMapping
     default void updateFromDto(ReceptionDetailDto dto, @MappingTarget ReceptionDetail entity) {
 
         if (dto.getQuantity() != null) {
             entity.setQuantity(dto.getQuantity());
         }
-        if (dto.getEtat() != null) {
-            entity.setEtat(dto.getEtat());
-        }
-
     }
 }

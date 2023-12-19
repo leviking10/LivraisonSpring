@@ -24,12 +24,10 @@ public class ReceptionStock implements Serializable {
     private Entrepot entrepot;
     private LocalDate dateReception;
     private String quart; // Quart de travail ou session de production
-
+    @Column(unique = true, nullable = false)
+    private String reference;
     @OneToMany(mappedBy = "receptionStock", cascade = CascadeType.ALL)
     private List<ReceptionDetail> receptionDetails;// Détails des articles reçus
-    @OneToMany(mappedBy = "receptionStockMv", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Mouvement> mouvements; // Les mouvements liés à cette réception
-
     @Override
     public String toString() {
         return "ReceptionStock{" +
@@ -38,7 +36,6 @@ public class ReceptionStock implements Serializable {
                 ", dateReception=" + dateReception +
                 ", quart='" + quart + '\'' +
                 ", receptionDetails=" + receptionDetails +
-                ", mouvements=" + mouvements +
                 '}';
     }
 }

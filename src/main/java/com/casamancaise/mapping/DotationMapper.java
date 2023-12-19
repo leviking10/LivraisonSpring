@@ -4,7 +4,7 @@ import com.casamancaise.entities.Dotation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {ArticleMapper.class, MouvementMapper.class})
+@Mapper(componentModel = "spring", uses = {ArticleMapper.class,MouvementMapper.class})
 public interface DotationMapper extends EntityMapper<DotationDto, Dotation> {
     @Mapping(source = "article.idArticle", target = "articleId")
     @Override

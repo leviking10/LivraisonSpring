@@ -11,5 +11,5 @@ public class ReceptionDetailDto implements Serializable {
     private Long idreceptionStock; // On utilise seulement l'ID pour le stock de réception
     private Long idarticle;
     private Integer quantity;
-    private Etat etat;
+
 }

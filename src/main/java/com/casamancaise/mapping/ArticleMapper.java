@@ -1,8 +1,6 @@
 package com.casamancaise.mapping;
 import com.casamancaise.dto.ArticleDto;
-import com.casamancaise.dto.EntrepotDto;
 import com.casamancaise.entities.Article;
-import com.casamancaise.entities.Entrepot;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -11,7 +9,6 @@ public interface ArticleMapper{
 
     ArticleDto toDto(Article entity);
     Article toEntity(ArticleDto dto);
-
     default Article fromId(Long id) {
         if (id == null) {
             return null;

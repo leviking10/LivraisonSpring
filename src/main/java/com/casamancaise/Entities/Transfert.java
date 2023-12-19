@@ -1,10 +1,7 @@
 package com.casamancaise.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -26,27 +23,35 @@ public class Transfert implements Serializable {
     @JoinColumn(name = "from_entrepot_id", nullable = false)
     private Entrepot fromEntrepot;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "to_entrepot_id", nullable = false)
-    private Entrepot toEntrepot;
-
-    @Column(name = "transfer_date", nullable = false)
-    private LocalDate transferDate; // Utilisation de LocalDate
-
-    @Column(name = "is_received")
-    private boolean isReceived;
-
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_destinataire", nullable = false)
+    private TypeDestinataire typeDestinataire;
+    @Column(name = "destinataire_id", nullable = false)
+    private Integer destinataireId;
+    @Column(unique = true, nullable = false)
+    private String reference;
+    private LocalDate transferDate;
     @OneToMany(mappedBy = "transfert", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransferDetails> transferDetails;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_vehi", nullable = false)
+    @JoinColumn(name = "id_vehicule", nullable = false)
     private Vehicule vehicule;
 
     @Enumerated(EnumType.STRING)
     private EtatTransfert etat;
-    // Relation avec Mouvement
-    @OneToMany(mappedBy = "transfert", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Mouvement> mouvements;
 
+    @Override
+    public String toString() {
+        return "Transfert{" +
+                "id=" + id +
+                ", fromEntrepot=" + fromEntrepot +
+                ", typeDestinataire=" + typeDestinataire +
+                ", destinataireId=" + destinataireId +
+                ", reference='" + reference + '\'' +
+                ", transferDate=" + transferDate +
+                ", transferDetails=" + transferDetails +
+                ", vehicule=" + vehicule +
+                ", etat=" + etat +
+                '}';
+    }
 }

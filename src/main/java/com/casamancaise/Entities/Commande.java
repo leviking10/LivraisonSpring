@@ -41,6 +41,6 @@ public class Commande implements Serializable {
 
     // Enum class can be in the same file or in its own file
     public enum StatutCommande {
-        EN_ATTENTE, EN_COURS, TERMINEE, ANNULEE;
+        EN_ATTENTE, EN_COURS, VALIDEE, ANNULEE;
     }
 }

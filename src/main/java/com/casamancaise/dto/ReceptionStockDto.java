@@ -14,6 +14,6 @@ public class ReceptionStockDto implements Serializable {
     private Integer entrepotId;
     private LocalDate dateReception;
     private String quart;
+    private String reference;
     private List<ReceptionDetailDto> receptionDetails;
-    private List<MouvementDto> mouvements;
 }

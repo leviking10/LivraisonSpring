@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -36,12 +38,14 @@ public class ReceptionServiceImpl implements ReceptionService {
     @Autowired
     private InventaireRepository inventaireRepository;
 
+    @Override
     public ReceptionStockDto saveReception(ReceptionStockDto receptionStockDto) {
         logger.info("Début de la méthode saveReception avec receptionStockDto: {}", receptionStockDto);
-
+        LocalDate today = LocalDate.now();
         // Convertir DTO en entité
         ReceptionStock receptionStock = receptionStockMapper.toEntity(receptionStockDto);
-
+        receptionStock.setReference(generateReference());
+        receptionStock.setDateReception(today);
         // Associer les détails de réception à l'entité ReceptionStock
         if (receptionStockDto.getReceptionDetails() != null && !receptionStockDto.getReceptionDetails().isEmpty()) {
             receptionStock.getReceptionDetails().clear(); // Nettoyer les anciens détails si nécessaire
@@ -52,7 +56,6 @@ public class ReceptionServiceImpl implements ReceptionService {
                 receptionStock.getReceptionDetails().add(detail);
             }
         }
-
         // Sauvegarder l'entité de réception avec tous ses détails
         receptionStock = receptionStockRepository.save(receptionStock);
 
@@ -88,14 +91,22 @@ public class ReceptionServiceImpl implements ReceptionService {
         inventaireRepository.save(inventaire);
         Mouvement mouvement = new Mouvement();
         mouvement.setInventaire(inventaire);
-        mouvement.setDateMouvement(LocalDate.now());
+        mouvement.setDateMouvement(LocalDateTime.now());
         mouvement.setQuantiteChange(quantityChange);
         mouvement.setCondition(detail.getEtat().name());
         mouvement.setType(TypeMouvement.ENTREE);
-        mouvement.setReceptionStockMv(receptionStock);
+        mouvement.setReference(receptionStock.getReference());
         mouvementRepository.save(mouvement);
     }
 
+    private String generateReference() {
+        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        logger.info("Nombre de reception pour aujourd'hui (avant incrémentation) : {}", datePart);
+        int count = receptionStockRepository.countReceptionsForToday() + 1;
+        return "RC" + datePart + String.format("%04d", count);
+    }
+
+    @Override
     public ReceptionStockDto getReceptionById(Long id) {
         ReceptionStock receptionStock = receptionStockRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Réception  non trouvée avec l'id: " + id));
@@ -106,56 +117,16 @@ public class ReceptionServiceImpl implements ReceptionService {
         receptionStockRepository.deleteById(id);
     }
 
+    @Override
     public List<ReceptionStockDto> getAllReceptions() {
         return receptionStockRepository.findAll().stream()
                 .map(receptionStockMapper::toDto)
                 .toList();
     }
 
-    @Transactional
-    public ReceptionStockDto updateReception(Long id, ReceptionStockDto receptionStockDto) {
-        logger.info("Début de la méthode updateReception avec id: {} et receptionStockDto: {}", id, receptionStockDto);
-
-        // Trouver la réception existante ou jeter une exception si non trouvée
-        ReceptionStock receptionStock = receptionStockRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Réception de stock non trouvée avec l'id: " + id));
-
-        // Mettre à jour l'entité ReceptionStock avec les nouvelles valeurs du DTO (sauf les détails)
-        receptionStockMapper.updateFromDto(receptionStockDto, receptionStock);
-
-        // Traitement des détails de la réception
-        List<Long> detailIds = new ArrayList<>();
-        if (receptionStockDto.getReceptionDetails() != null) {
-            for (ReceptionDetailDto detailDto : receptionStockDto.getReceptionDetails()) {
-                ReceptionDetail detail;
-                if (detailDto.getId() != null) {
-                    // Mettre à jour le détail existant
-                    detail = receptionDetailRepository.findById(detailDto.getId())
-                            .orElseThrow(() -> new RuntimeException("Détail de réception non trouvé avec l'id: " + detailDto.getId()));
-                    receptionDetailMapper.updateFromDto(detailDto, detail);
-                } else {
-                    // Créer un nouveau détail
-                    detail = receptionDetailMapper.toEntity(detailDto);
-                    detail.setReceptionStock(receptionStock);
-                }
-                detailIds.add(detail.getId());
-
-                // Mettre à jour l'inventaire et créer/mettre à jour le mouvement
-                updateInventoryAndCreateMovement(detail, receptionStock);
-            }
-        }
-
-        // Supprimer les détails qui ne sont plus présents
-        receptionStock.getReceptionDetails().removeIf(detail -> !detailIds.contains(detail.getId()));
-
-        // Sauvegarder les changements dans la réception stock
-        receptionStock = receptionStockRepository.save(receptionStock);
-
-        // Convertir en DTO pour le retour
-        ReceptionStockDto savedReceptionStockDto = receptionStockMapper.toDto(receptionStock);
-        logger.info("Fin de la méthode updateReception avec savedReceptionStockDto : {}", savedReceptionStockDto);
-        return savedReceptionStockDto;
+    @Override
+    public Optional<ReceptionStockDto> findByReference(String reference) {
+        return receptionStockRepository.findByReference(reference)
+                .map(receptionStockMapper::toDto);
     }
 }
-
-

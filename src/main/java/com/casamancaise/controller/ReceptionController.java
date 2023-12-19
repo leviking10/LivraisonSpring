@@ -41,11 +41,7 @@ public class ReceptionController {
         return ResponseEntity.ok(receptions);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ReceptionStockDto> updateReception(@PathVariable Long id, @Valid @RequestBody ReceptionStockDto receptionStockDto) {
-        ReceptionStockDto updatedReception = receptionService.updateReception(id, receptionStockDto);
-        return ResponseEntity.ok(updatedReception);
-    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReception(@PathVariable Long id) {

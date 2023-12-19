@@ -7,10 +7,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransferDetailsDto {
-    private Integer id;
-    private Integer articleId; // Référence à l'ID de l'article
-    private Integer quantite;  // Quantité d'articles transférés
-    private Integer transfertId; // Référence à l'ID du transfert
-    private String nomArticle;
-    private String detailsTransfert;
+    private Long id;
+    private Long articleId; // ID de l'article transféré
+    private Integer quantite; // Quantité de l'article transféré
+    private Integer bonus; // Bonus éventuel pour cet article
+    private Long transfertId; // ID du transfert associé
 }

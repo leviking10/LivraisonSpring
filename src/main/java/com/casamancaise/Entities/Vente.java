@@ -28,8 +28,4 @@ public class Vente implements Serializable {
     private Entrepot entrepot;
 
     private LocalDate dateVente;
-
-    // Relation avec Mouvement
-    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Mouvement> mouvements;
 }

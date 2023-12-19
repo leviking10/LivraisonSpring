@@ -23,7 +23,21 @@ public class TransferDetails implements Serializable {
     @Column(nullable = false)
     private Integer quantite;
 
+    @Column
+    private Integer bonus;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "transfert_id", nullable = false)
     private Transfert transfert;
+
+    @Override
+    public String toString() {
+        return "TransferDetails{" +
+                "id=" + id +
+                ", article=" + article +
+                ", quantite=" + quantite +
+                ", bonus=" + bonus +
+                ", transfert=" + transfert +
+                '}';
+    }
 }

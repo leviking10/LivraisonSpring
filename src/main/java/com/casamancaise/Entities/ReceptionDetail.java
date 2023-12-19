@@ -26,7 +26,7 @@ public class ReceptionDetail implements Serializable {
     private Integer quantity;
     @Enumerated(EnumType.STRING)
     @NotNull
-    private Etat etat;
+    private Etat etat= Etat.CONFORME;
 
     @Override
     public String toString() {

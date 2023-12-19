@@ -2,8 +2,6 @@ package com.casamancaise.mapping;
 
 import com.casamancaise.dto.DetailVenteDto;
 import com.casamancaise.entities.DetailVente;
-import com.casamancaise.entities.Dotation;
-import com.casamancaise.entities.Vente;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -14,7 +12,6 @@ public interface DetailVenteMapper extends EntityMapper<DetailVenteDto, DetailVe
     @Mapping(source = "article.idArticle", target = "articleId")
     @Override
     DetailVenteDto toDto(DetailVente detailVente);
-
     @Mapping(source = "venteId", target = "vente")
     @Mapping(source = "articleId", target = "article")
     @Override

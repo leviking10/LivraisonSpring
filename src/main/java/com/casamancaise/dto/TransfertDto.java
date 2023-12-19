@@ -1,7 +1,10 @@
 package com.casamancaise.dto;
 
+import com.casamancaise.entities.EtatTransfert;
+import com.casamancaise.entities.TypeDestinataire;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -10,14 +13,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransfertDto {
-    private Integer id;
-    private Integer fromEntrepotId; // ID de l'entrepôt d'origine
-    private Integer toEntrepotId;   // ID de l'entrepôt de destination
-    private Date transferDate;       // Date du transfert
-    private boolean isReceived;      // Statut de réception
-    private Integer vehiculeId;          // ID du véhicule utilisé pour le transfert
-
-    // Vous pouvez également inclure des DTOs pour les détails de transfert si nécessaire
-    private List<TransferDetailsDto> transferDetails;
-
+    private Long id;
+    private Long fromEntrepotId; // ID de l'entrepôt d'origine
+    private TypeDestinataire typeDestinataire;
+    private Integer destinataireId; // ID du client ou de l'entrepôt de destination
+    private LocalDate transferDate;
+    private Long vehiculeId; // ID du véhicule utilisé pour le transfert
+    private EtatTransfert etat;
+    private String reference;
+    // Liste des détails de transfert, représentée par des DTOs
+    private List<TransferDetailsDto> transferDetails;        // ID du véhicule utilisé pour le transfert
 }

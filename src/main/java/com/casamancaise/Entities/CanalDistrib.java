@@ -11,6 +11,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Table(name = "canal_distrib")
 public class CanalDistrib  implements Serializable {
+
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Integer idCanal;

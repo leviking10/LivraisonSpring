@@ -28,6 +28,4 @@ public class Dotation implements Serializable {
     private Integer quantite;
 
     private String motif;
-    @OneToMany(mappedBy = "dotation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Mouvement> mouvements;
 }
