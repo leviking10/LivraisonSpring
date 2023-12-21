@@ -60,4 +60,9 @@ public class ClientServiceImpl implements ClientService{
         clientRepository.deleteById(id);
     }
 
+    @Override
+    public boolean clientExistsWithCanalDistrib(Long clientId, Integer canalDistribId) {
+        return clientRepository.existsByIdAndCanalDistribId(clientId, canalDistribId);
+    }
+
 }

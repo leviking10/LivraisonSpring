@@ -48,6 +48,17 @@ public class TransfertController {
         TransfertDto updatedTransfert = transfertService.updateTransfertStatus(id, etat);
         return ResponseEntity.ok(updatedTransfert);
     }
+    @PatchMapping("/{id}/annuler")
+    public ResponseEntity<TransfertDto> annulerTransfert(@PathVariable  String reference) {
+        try {
+            TransfertDto transfertAnnule = transfertService.annulerTransfert(reference);
+            return ResponseEntity.ok(transfertAnnule);
+        } catch (RuntimeException e) {
+            // Gérer les exceptions
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
     @PatchMapping("/{id}/recevoir")
     public ResponseEntity<TransfertDto> recevoirTransfert(@PathVariable Long id, @RequestBody LocalDate dateLivraison) {
         try {
@@ -68,12 +79,6 @@ public class TransfertController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransfert(@PathVariable Long id) {
-        transfertService.deleteTransfert(id);
-        return ResponseEntity.ok().build();
-    }
-
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

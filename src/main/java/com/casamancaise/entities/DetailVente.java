@@ -27,6 +27,7 @@ public class DetailVente implements Serializable {
     @JoinColumn(name = "article_id")
     private Article article; // Le produit vendu
     private Integer quantity; // La quantité vendue
+    private Integer bonus;
     private BigDecimal poids;
 
 }

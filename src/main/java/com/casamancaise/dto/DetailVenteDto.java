@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,5 +17,6 @@ public class DetailVenteDto implements Serializable {
     private Long venteId; // L'ID de la vente associée
     private Long articleId; // L'ID de l'article vendu
     private Integer quantity; // Quantité vendue
+    private Integer bonus;
     private BigDecimal poids;// Poids de l'article vendu
 }

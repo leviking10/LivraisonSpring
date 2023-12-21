@@ -1,10 +1,6 @@
 package com.casamancaise.entities;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 @Entity
@@ -21,21 +17,8 @@ public class Annulation implements Serializable {
     private String ref;
     @Column(name = "ref_reception", nullable = false)
     private String refReception;
-
     @Column(name = "date_annulation", nullable = false)
     private LocalDate dateAnnulation;
-
     @Column(nullable = false)
     private String raison;
-
-    @Override
-    public String toString() {
-        return "Annulation{" +
-                "id=" + id +
-                ", ref='" + ref + '\'' +
-                ", refReception='" + refReception + '\'' +
-                ", dateAnnulation=" + dateAnnulation +
-                ", raison='" + raison + '\'' +
-                '}';
-    }
 }

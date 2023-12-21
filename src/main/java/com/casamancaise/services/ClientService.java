@@ -10,4 +10,5 @@ public interface ClientService {
     List<ClientDto> getAllClients();
     ClientDto updateClient(Long id, ClientDto clientDto);
     void deleteClient(Long id);
+    boolean clientExistsWithCanalDistrib(Long clientId, Integer canalDistribId);
 }

@@ -2,7 +2,7 @@ package com.casamancaise.controller;
 
 import com.casamancaise.dto.AnnulationDto;
 import com.casamancaise.services.AnnulationService;
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +12,12 @@ import java.util.List;
 @RequestMapping("/api/annulations")
 public class AnnulationController {
 
-    @Autowired
     private AnnulationService annulationService;
+
+    @Autowired
+    public AnnulationController(AnnulationService annulationService) {
+        this.annulationService = annulationService;
+    }
 
     @PostMapping
     public ResponseEntity<AnnulationDto> createAnnulation(@RequestBody AnnulationDto annulationDto) {

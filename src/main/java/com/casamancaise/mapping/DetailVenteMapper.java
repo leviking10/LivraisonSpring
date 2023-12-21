@@ -10,11 +10,8 @@ public interface DetailVenteMapper extends EntityMapper<DetailVenteDto, DetailVe
 
     @Mapping(source = "vente.id", target = "venteId")
     @Mapping(source = "article.idArticle", target = "articleId")
-    @Override
     DetailVenteDto toDto(DetailVente detailVente);
     @Mapping(source = "venteId", target = "vente")
     @Mapping(source = "articleId", target = "article")
-    @Override
     DetailVente toEntity(DetailVenteDto detailVenteDto);
-
 }

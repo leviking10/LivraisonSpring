@@ -7,13 +7,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "mouvement_sortie_detail")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MouvementSortieDetail {
+public class MouvementSortieDetail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

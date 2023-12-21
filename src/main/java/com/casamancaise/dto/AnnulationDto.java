@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class AnnulationDto {
     private Long id;
     private String ref;
-    private String RefReception;
+    private String refReception;
     private LocalDate dateAnnulation;
     private String raison;
 }
