@@ -1,7 +1,12 @@
 package com.casamancaise.entities;
 
+import com.casamancaise.enums.EtatTransfert;
+import com.casamancaise.enums.TypeDestinataire;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -14,7 +19,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Transfert implements Serializable {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,6 +30,7 @@ public class Transfert implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "type_destinataire", nullable = false)
     private TypeDestinataire typeDestinataire;
+
     @Column(name = "destinataire_id", nullable = false)
     private Integer destinataireId;
     @Column(unique = true, nullable = false)
@@ -38,23 +43,7 @@ public class Transfert implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_vehicule", nullable = false)
     private Vehicule vehicule;
-
     @Enumerated(EnumType.STRING)
     private EtatTransfert etat;
 
-    @Override
-    public String toString() {
-        return "Transfert{" +
-                "id=" + id +
-                ", fromEntrepot=" + fromEntrepot +
-                ", typeDestinataire=" + typeDestinataire +
-                ", destinataireId=" + destinataireId +
-                ", reference='" + reference + '\'' +
-                ", transferDate=" + transferDate +
-                ", LivraisonDate=" + ReceptionDate +
-                ", transferDetails=" + transferDetails +
-                ", vehicule=" + vehicule +
-                ", etat=" + etat +
-                '}';
-    }
 }

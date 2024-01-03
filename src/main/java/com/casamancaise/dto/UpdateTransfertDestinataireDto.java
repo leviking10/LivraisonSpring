@@ -1,6 +1,10 @@
 package com.casamancaise.dto;
-import com.casamancaise.entities.TypeDestinataire;
-import lombok.*;
+
+import com.casamancaise.enums.TypeDestinataire;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter

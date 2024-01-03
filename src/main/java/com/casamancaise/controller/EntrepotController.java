@@ -14,6 +14,7 @@ import java.util.List;
 public class EntrepotController {
 
     private final EntrepotService entrepotService;
+
     @Autowired
     public EntrepotController(EntrepotService entrepotService) {
         this.entrepotService = entrepotService;
@@ -34,6 +35,7 @@ public class EntrepotController {
     public List<EntrepotDto> getAllEntrepots() {
         return entrepotService.getAllEntrepots();
     }
+
     @PutMapping("/{id}")
     public EntrepotDto updateEntrepot(@PathVariable Integer id, @RequestBody @Valid EntrepotDto entrepotDto) {
         return entrepotService.updateEntrepot(id, entrepotDto);
@@ -41,7 +43,7 @@ public class EntrepotController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEntrepot(@PathVariable Integer  id) {
+    public void deleteEntrepot(@PathVariable Integer id) {
         entrepotService.deleteEntrepot(id);
     }
 }

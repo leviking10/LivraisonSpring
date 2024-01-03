@@ -1,4 +1,5 @@
 package com.casamancaise.controller;
+
 import com.casamancaise.dto.FonctionDto;
 import com.casamancaise.services.FonctionService;
 import jakarta.validation.Valid;
@@ -7,10 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/fonctions")
 public class FonctionController {
     private final FonctionService fonctionService;
+
     @Autowired
     public FonctionController(FonctionService fonctionService) {
         this.fonctionService = fonctionService;
@@ -31,6 +34,7 @@ public class FonctionController {
     public List<FonctionDto> getAllFonctions() {
         return fonctionService.getAllFonctions();
     }
+
     @PutMapping("/{id}")
     public FonctionDto updateFonction(@PathVariable Integer id, @RequestBody @Valid FonctionDto fonctionDto) {
         return fonctionService.updateFonction(id, fonctionDto);
@@ -38,7 +42,7 @@ public class FonctionController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteFonction(@PathVariable Integer  id) {
+    public void deleteFonction(@PathVariable Integer id) {
         fonctionService.deleteFonction(id);
     }
 }

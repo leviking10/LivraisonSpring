@@ -1,6 +1,12 @@
 package com.casamancaise.entities;
+
+import com.casamancaise.enums.TypeMouvement;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 

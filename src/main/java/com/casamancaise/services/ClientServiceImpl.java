@@ -5,19 +5,20 @@ import com.casamancaise.dao.ClientRepository;
 import com.casamancaise.dto.ClientDto;
 import com.casamancaise.entities.Client;
 import com.casamancaise.mapping.ClientMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 @Service
 @Transactional
-public class ClientServiceImpl implements ClientService{
-    private static final Logger log = LoggerFactory.getLogger(ClientServiceImpl.class);
-
+@Slf4j
+public class ClientServiceImpl implements ClientService {
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
+
     @Autowired
     public ClientServiceImpl(ClientRepository clientRepository, ClientMapper clientMapper) {
         this.clientRepository = clientRepository;
@@ -46,14 +47,14 @@ public class ClientServiceImpl implements ClientService{
                 .toList();
     }
 
-        @Override
-        public ClientDto updateClient(Long id, ClientDto clientDto) {
-            Client existingClient = clientRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Client not found with id: " + id));
-            clientMapper.updateClientFromDto(clientDto, existingClient);
-            existingClient = clientRepository.save(existingClient);
-            return clientMapper.toDto(existingClient);
-        }
+    @Override
+    public ClientDto updateClient(Long id, ClientDto clientDto) {
+        Client existingClient = clientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Client not found with id: " + id));
+        clientMapper.updateClientFromDto(clientDto, existingClient);
+        existingClient = clientRepository.save(existingClient);
+        return clientMapper.toDto(existingClient);
+    }
 
     @Override
     public void deleteClient(Long id) {

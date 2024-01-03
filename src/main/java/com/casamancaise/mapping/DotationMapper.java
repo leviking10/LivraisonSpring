@@ -3,17 +3,17 @@ import com.casamancaise.dto.DotationDto;
 import com.casamancaise.entities.Dotation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring", uses = {ArticleMapper.class,MouvementMapper.class})
+@Mapper(componentModel = "spring", uses = {EntrepotMapper.class, DetailsDotationMapper.class})
 public interface DotationMapper extends EntityMapper<DotationDto, Dotation> {
-    @Mapping(source = "article.idArticle", target = "articleId")
-    @Override
-    DotationDto toDto(Dotation dotation);
-    @Mapping(source = "articleId", target = "article")
-    @Override
+    @Mapping(source = "entrepot.idEntre", target = "entrepotId")
+    DotationDto toDto(Dotation entity);
+
+    @Mapping(source = "entrepotId", target = "entrepot")
     Dotation toEntity(DotationDto dotationDto);
 
-    default Dotation mapToDotation(Long id) {
+    default Dotation fromId(Long id) {
         if (id == null) {
             return null;
         }
@@ -22,4 +22,5 @@ public interface DotationMapper extends EntityMapper<DotationDto, Dotation> {
         return dotation;
     }
 
+    void updateFromDto(DotationDto dto, @MappingTarget Dotation entity);
 }

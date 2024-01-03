@@ -2,7 +2,6 @@ package com.casamancaise.mapping;
 
 import com.casamancaise.dto.AnnulationDto;
 import com.casamancaise.entities.Annulation;
-import com.casamancaise.entities.ReceptionStock;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")

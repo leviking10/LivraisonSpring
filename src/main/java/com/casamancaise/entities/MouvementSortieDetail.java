@@ -1,5 +1,6 @@
 package com.casamancaise.entities;
 
+import com.casamancaise.enums.Etat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -26,9 +27,9 @@ public class MouvementSortieDetail implements Serializable {
     private Integer quantite;
     @Enumerated(EnumType.STRING)
     @NotNull
-    private Etat etat= Etat.NON_CONFORME;
+    private Etat etat = Etat.NON_CONFORME;
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "mouvement_sortie_id",nullable = false)
+    @JoinColumn(name = "mouvement_sortie_id", nullable = false)
     private MouvementSortie mouvementSortie;
 
     @Override

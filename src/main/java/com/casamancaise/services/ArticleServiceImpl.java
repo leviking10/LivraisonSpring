@@ -1,4 +1,5 @@
 package com.casamancaise.services;
+
 import com.casamancaise.dao.ArticleRepository;
 import com.casamancaise.dto.ArticleDto;
 import com.casamancaise.entities.Article;
@@ -6,7 +7,9 @@ import com.casamancaise.mapping.ArticleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+
 @Service
 @Transactional
 public class ArticleServiceImpl implements ArticleService {
@@ -49,6 +52,7 @@ public class ArticleServiceImpl implements ArticleService {
         existingArticle = articleRepository.save(existingArticle);
         return articleMapper.toDto(existingArticle);
     }
+
     @Override
     public void deleteArticle(Long id) {
         articleRepository.deleteById(id);

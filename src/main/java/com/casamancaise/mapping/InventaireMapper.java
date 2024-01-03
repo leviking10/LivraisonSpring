@@ -2,7 +2,6 @@ package com.casamancaise.mapping;
 
 import com.casamancaise.dto.InventaireDto;
 import com.casamancaise.entities.Inventaire;
-import com.casamancaise.entities.ReceptionStock;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

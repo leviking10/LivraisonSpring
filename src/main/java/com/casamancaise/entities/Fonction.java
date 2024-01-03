@@ -1,10 +1,13 @@
 package com.casamancaise.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "fonctions")

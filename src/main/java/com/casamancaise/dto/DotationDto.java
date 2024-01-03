@@ -7,15 +7,18 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class DotationDto implements Serializable {
     private Long id;
+    private String reference;
+    private Integer entrepotId;
     private String destinataire;
-    private Long articleId; // L'ID de l'article au lieu de l'objet Article
     private LocalDate dateDotation;
-    private Integer quantite;
     private String motif;
+    private List<DetailsDotationDto> detailsDotation;
 }

@@ -10,17 +10,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 @Service
-public class EntrepotServiceImpl implements EntrepotService{
+public class EntrepotServiceImpl implements EntrepotService {
 
     private final EntrepotRepository entrepotRepository;
     private final EntrepotMapper entrepotMapper;
+
     @Autowired
     public EntrepotServiceImpl(EntrepotRepository entrepotRepository, EntrepotMapper entrepotMapper) {
         this.entrepotRepository = entrepotRepository;
         this.entrepotMapper = entrepotMapper;
     }
+
     @Override
     @Transactional
     public EntrepotDto createEntrepot(EntrepotDto entrepotDto) {
@@ -28,13 +30,15 @@ public class EntrepotServiceImpl implements EntrepotService{
         entrepot = entrepotRepository.save(entrepot);
         return entrepotMapper.entrepotToEntrepotDTO(entrepot);
     }
+
     @Override
     @Transactional(readOnly = true)
-    public EntrepotDto getEntrepotById(Integer  id) {
+    public EntrepotDto getEntrepotById(Integer id) {
         Entrepot entrepot = entrepotRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Fonction not found with id: " + id));
         return entrepotMapper.entrepotToEntrepotDTO(entrepot);
     }
+
     @Override
     @Transactional
     public void deleteEntrepot(Integer id) {
@@ -43,14 +47,16 @@ public class EntrepotServiceImpl implements EntrepotService{
         }
         entrepotRepository.deleteById(id);
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<EntrepotDto> getAllEntrepots() {
-        List<Entrepot> entrepots= entrepotRepository.findAll();
+        List<Entrepot> entrepots = entrepotRepository.findAll();
         return entrepots.stream()
                 .map(entrepotMapper::entrepotToEntrepotDTO)
                 .toList();
     }
+
     @Override
     @Transactional
     public EntrepotDto updateEntrepot(Integer id, EntrepotDto entrepotDto) {

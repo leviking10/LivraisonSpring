@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class CanalDistribServiceImpl implements CanalDistribService{
+public class CanalDistribServiceImpl implements CanalDistribService {
     private final CanalDistribRepository canalDistribRepository;
     private final CanalDistribMapper canalDistribMapper;
 

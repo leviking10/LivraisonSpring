@@ -1,8 +1,12 @@
 package com.casamancaise.entities;
 
+import com.casamancaise.enums.Etat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 
@@ -26,7 +30,7 @@ public class ReceptionDetail implements Serializable {
     private Integer quantity;
     @Enumerated(EnumType.STRING)
     @NotNull
-    private Etat etat= Etat.CONFORME;
+    private Etat etat = Etat.CONFORME;
 
     @Override
     public String toString() {

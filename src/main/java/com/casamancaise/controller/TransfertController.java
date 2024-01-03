@@ -1,7 +1,8 @@
 package com.casamancaise.controller;
+
 import com.casamancaise.dto.TransfertDto;
 import com.casamancaise.dto.UpdateTransfertDestinataireDto;
-import com.casamancaise.entities.EtatTransfert;
+import com.casamancaise.enums.EtatTransfert;
 import com.casamancaise.exeption.EntityNotFoundException;
 import com.casamancaise.services.TransfertService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/transferts")
 public class TransfertController {
@@ -43,13 +45,15 @@ public class TransfertController {
         List<TransfertDto> transferts = transfertService.getAllTransferts();
         return ResponseEntity.ok(transferts);
     }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<TransfertDto> updateTransfertStatus(@PathVariable Long id, @RequestBody EtatTransfert etat) {
         TransfertDto updatedTransfert = transfertService.updateTransfertStatus(id, etat);
         return ResponseEntity.ok(updatedTransfert);
     }
+
     @PatchMapping("/{id}/annuler")
-    public ResponseEntity<TransfertDto> annulerTransfert(@PathVariable  String reference) {
+    public ResponseEntity<TransfertDto> annulerTransfert(@PathVariable String reference) {
         try {
             TransfertDto transfertAnnule = transfertService.annulerTransfert(reference);
             return ResponseEntity.ok(transfertAnnule);
@@ -69,6 +73,7 @@ public class TransfertController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
     @PatchMapping("/{id}/destinataire")
     public ResponseEntity<TransfertDto> updateTransfertDestinataire(@PathVariable Long id, @RequestBody UpdateTransfertDestinataireDto updateDto) {
         try {
@@ -79,6 +84,7 @@ public class TransfertController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

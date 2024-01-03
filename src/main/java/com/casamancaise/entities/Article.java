@@ -1,6 +1,10 @@
 package com.casamancaise.entities;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -34,6 +38,7 @@ public class Article implements Serializable {
     private Double tonage;
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<ReceptionDetail> receptionDetails;
+
     public Article(Long idArticle) {
         this.idArticle = idArticle;
     }

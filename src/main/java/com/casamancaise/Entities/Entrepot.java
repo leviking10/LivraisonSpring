@@ -1,7 +1,10 @@
 package com.casamancaise.entities;
-import jakarta.persistence.*;
 
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,18 +18,18 @@ import java.util.List;
 @AllArgsConstructor
 public class Entrepot implements Serializable {
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Integer idEntre;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer idEntre;
 
-        @Column(name = "nom", nullable = false, length = 80)
-        private String nomEntr;
-        @Column(name = "localite", nullable = false, length = 80)
-        private String localEntr;
-        @OneToMany(mappedBy = "fromEntrepot", cascade = CascadeType.ALL, orphanRemoval = true)
-        private List<Transfert> transfertsFrom;
+    @Column(name = "nom", nullable = false, length = 80)
+    private String nomEntr;
+    @Column(name = "localite", nullable = false, length = 80)
+    private String localEntr;
+    @OneToMany(mappedBy = "fromEntrepot", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transfert> transfertsFrom;
 
-        public Entrepot(Integer idEntre) {
-                this.idEntre = idEntre;
-        }
+    public Entrepot(Integer idEntre) {
+        this.idEntre = idEntre;
+    }
 }

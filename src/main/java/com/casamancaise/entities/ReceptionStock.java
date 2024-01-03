@@ -1,7 +1,10 @@
 package com.casamancaise.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -18,7 +21,6 @@ public class ReceptionStock implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "entrepot_id", nullable = false)
     private Entrepot entrepot;
@@ -26,16 +28,7 @@ public class ReceptionStock implements Serializable {
     private String quart; // Quart de travail ou session de production
     @Column(unique = true, nullable = false)
     private String reference;
+    private boolean estAnnulee;
     @OneToMany(mappedBy = "receptionStock", cascade = CascadeType.ALL)
     private List<ReceptionDetail> receptionDetails;// Détails des articles reçus
-    @Override
-    public String toString() {
-        return "ReceptionStock{" +
-                "id=" + id +
-                ", entrepot=" + entrepot +
-                ", dateReception=" + dateReception +
-                ", quart='" + quart + '\'' +
-                ", receptionDetails=" + receptionDetails +
-                '}';
-    }
 }

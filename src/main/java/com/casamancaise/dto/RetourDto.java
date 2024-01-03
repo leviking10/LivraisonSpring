@@ -1,5 +1,6 @@
 package com.casamancaise.dto;
 
+import com.casamancaise.enums.TypeRetour;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,9 +16,14 @@ import java.util.List;
 @AllArgsConstructor
 public class RetourDto implements Serializable {
     private Long id;
+    private String reference;
+    private TypeRetour typeRetour;
+    private Long entrepotId; // ID de l'entrepôt
+    private Long operationId;
     private LocalDate dateRetour;
     private String raison;
+    private Long vehiculeId;
     private List<DetailRetourDto> detailsRetours;
 
-    // Getters, Setters, Constructeurs...
+
 }

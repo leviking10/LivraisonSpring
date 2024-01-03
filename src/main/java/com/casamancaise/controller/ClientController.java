@@ -5,7 +5,6 @@ import com.casamancaise.services.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +39,7 @@ public class ClientController {
 
     @PutMapping("/{id}")
     public ClientDto updateClient(@PathVariable Long id, @RequestBody @Valid ClientDto clientDto) {
+        clientDto.setId(id);
         return clientService.updateClient(id, clientDto);
     }
 

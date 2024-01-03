@@ -2,8 +2,10 @@ package com.casamancaise.mapping;
 
 import com.casamancaise.dto.MouvementSortieDto;
 import com.casamancaise.entities.MouvementSortie;
-import org.mapstruct.*;
-@Mapper(componentModel = "spring", uses = {EntrepotMapper.class,MouvementSortieDetailMapper.class})
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+@Mapper(componentModel = "spring", uses = {EntrepotMapper.class, MouvementSortieDetailMapper.class})
 public interface MouvementSortieMapper extends EntityMapper<MouvementSortieDto, MouvementSortie> {
 
     @Mapping(source = "entrepot.idEntre", target = "entrepotId")
@@ -11,6 +13,7 @@ public interface MouvementSortieMapper extends EntityMapper<MouvementSortieDto, 
 
     @Mapping(source = "entrepotId", target = "entrepot")
     MouvementSortie toEntity(MouvementSortieDto mouvementDto);
+
     default MouvementSortie fromId(Long id) {
         if (id == null) {
             return null;

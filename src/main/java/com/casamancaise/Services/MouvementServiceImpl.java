@@ -7,6 +7,7 @@ import com.casamancaise.mapping.MouvementMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,7 +34,9 @@ public class MouvementServiceImpl implements MouvementService {
     @Override
     public List<MouvementDto> getMovementsByArticle(Long articleId) {
         List<Mouvement> mouvements = mouvementRepository.findByArticleId(articleId);
-        return mouvements.stream().map(mouvementMapper::toDto).toList();
+        return mouvements.stream()
+                .map(mouvementMapper::toDto)
+                .toList();
     }
 
     @Override
@@ -45,6 +48,8 @@ public class MouvementServiceImpl implements MouvementService {
     @Override
     public List<MouvementDto> getMovementsByDateRange(LocalDate startDate, LocalDate endDate) {
         List<Mouvement> mouvements = mouvementRepository.findByDateMouvementBetween(startDate, endDate);
-        return mouvements.stream().map(mouvementMapper::toDto).toList();
+        return mouvements.stream()
+                .map(mouvementMapper::toDto)
+                .toList();
     }
 }

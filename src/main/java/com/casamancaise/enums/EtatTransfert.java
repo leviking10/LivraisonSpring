@@ -1,4 +1,4 @@
-package com.casamancaise.entities;
+package com.casamancaise.enums;
 
 public enum EtatTransfert {
     EN_COURS,

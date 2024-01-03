@@ -2,11 +2,9 @@ package com.casamancaise.mapping;
 
 import com.casamancaise.dto.TransfertDto;
 import com.casamancaise.entities.Transfert;
-import com.casamancaise.entities.TypeDestinataire;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-;
+
 @Mapper(componentModel = "spring", uses = {TransfertDetailsMapper.class, VehiculeMapper.class})
 public interface TransfertMapper extends EntityMapper<TransfertDto, Transfert> {
 

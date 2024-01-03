@@ -12,7 +12,7 @@ import java.util.List;
 @RequestMapping("/api/annulations")
 public class AnnulationController {
 
-    private AnnulationService annulationService;
+    private final AnnulationService annulationService;
 
     @Autowired
     public AnnulationController(AnnulationService annulationService) {

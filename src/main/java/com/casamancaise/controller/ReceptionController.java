@@ -3,17 +3,18 @@ package com.casamancaise.controller;
 import com.casamancaise.dto.ReceptionStockDto;
 import com.casamancaise.services.ReceptionService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/receptions")
+@Slf4j
 public class ReceptionController {
-    private static final Logger logger = LoggerFactory.getLogger(ReceptionController.class);
+
     private final ReceptionService receptionService;
 
     @Autowired
@@ -24,9 +25,15 @@ public class ReceptionController {
 
     @PostMapping
     public ResponseEntity<ReceptionStockDto> createReception(@Valid @RequestBody ReceptionStockDto receptionStockDto) {
-        logger.info("ReceptionStockDto received: {}", receptionStockDto);
+        log.info("ReceptionStockDto received: {}", receptionStockDto);
         ReceptionStockDto savedReception = receptionService.saveReception(receptionStockDto);
         return ResponseEntity.ok(savedReception);
+    }
+
+    @PostMapping("/annuler/{id}")
+    public ResponseEntity<ReceptionStockDto> annulerReception(@PathVariable Long id, @RequestBody String raison) {
+        receptionService.annulerReception(id, raison);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
@@ -40,7 +47,6 @@ public class ReceptionController {
         List<ReceptionStockDto> receptions = receptionService.getAllReceptions();
         return ResponseEntity.ok(receptions);
     }
-
 
 
     @DeleteMapping("/{id}")

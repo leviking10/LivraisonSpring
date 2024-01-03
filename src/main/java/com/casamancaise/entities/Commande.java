@@ -1,6 +1,10 @@
 package com.casamancaise.entities;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -41,6 +45,6 @@ public class Commande implements Serializable {
 
 
     public enum StatutCommande {
-        EN_ATTENTE, EN_COURS, VALIDEE, ANNULEE;
+        EN_ATTENTE, EN_COURS, VALIDEE, ANNULEE
     }
 }

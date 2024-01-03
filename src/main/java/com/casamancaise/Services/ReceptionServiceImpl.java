@@ -1,17 +1,18 @@
 package com.casamancaise.services;
 
+import com.casamancaise.dao.AnnulationRepository;
 import com.casamancaise.dao.InventaireRepository;
 import com.casamancaise.dao.MouvementRepository;
-import com.casamancaise.dao.ReceptionDetailRepository;
 import com.casamancaise.dao.ReceptionStockRepository;
 import com.casamancaise.dto.ReceptionDetailDto;
 import com.casamancaise.dto.ReceptionStockDto;
 import com.casamancaise.entities.*;
+import com.casamancaise.enums.Etat;
+import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.ReceptionDetailMapper;
 import com.casamancaise.mapping.ReceptionStockMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,18 +26,23 @@ import java.util.Optional;
 @Transactional
 public class ReceptionServiceImpl implements ReceptionService {
     private static final Logger logger = LoggerFactory.getLogger(ReceptionServiceImpl.class);
-    @Autowired
-    private ReceptionStockRepository receptionStockRepository;
-    @Autowired
-    private ReceptionDetailRepository receptionDetailRepository;
-    @Autowired
-    private ReceptionStockMapper receptionStockMapper;
-    @Autowired
-    private ReceptionDetailMapper receptionDetailMapper;
-    @Autowired
-    private MouvementRepository mouvementRepository;
-    @Autowired
-    private InventaireRepository inventaireRepository;
+    private final ReceptionStockRepository receptionStockRepository;
+    private final ReceptionStockMapper receptionStockMapper;
+
+    private final ReceptionDetailMapper receptionDetailMapper;
+
+    private final AnnulationRepository annulationRepository;
+    private final MouvementRepository mouvementRepository;
+    private final InventaireRepository inventaireRepository;
+
+    public ReceptionServiceImpl(ReceptionStockRepository receptionStockRepository, ReceptionStockMapper receptionStockMapper, ReceptionDetailMapper receptionDetailMapper, AnnulationRepository annulationRepository, MouvementRepository mouvementRepository, InventaireRepository inventaireRepository) {
+        this.receptionStockRepository = receptionStockRepository;
+        this.receptionStockMapper = receptionStockMapper;
+        this.receptionDetailMapper = receptionDetailMapper;
+        this.annulationRepository = annulationRepository;
+        this.mouvementRepository = mouvementRepository;
+        this.inventaireRepository = inventaireRepository;
+    }
 
     @Override
     public ReceptionStockDto saveReception(ReceptionStockDto receptionStockDto) {
@@ -46,6 +52,7 @@ public class ReceptionServiceImpl implements ReceptionService {
         ReceptionStock receptionStock = receptionStockMapper.toEntity(receptionStockDto);
         receptionStock.setReference(generateReference());
         receptionStock.setDateReception(today);
+        receptionStock.setEstAnnulee(false);
         // Associer les détails de réception à l'entité ReceptionStock
         if (receptionStockDto.getReceptionDetails() != null && !receptionStockDto.getReceptionDetails().isEmpty()) {
             receptionStock.getReceptionDetails().clear(); // Nettoyer les anciens détails si nécessaire
@@ -59,23 +66,78 @@ public class ReceptionServiceImpl implements ReceptionService {
         // Sauvegarder l'entité de réception avec tous ses détails
         receptionStock = receptionStockRepository.save(receptionStock);
 
-        // Maintenant que ReceptionStock est sauvegardé, mettre à jour l'inventaire et créer les mouvements
+        // Mettre à jour l'inventaire et créer les mouvements
         if (receptionStockDto.getReceptionDetails() != null && !receptionStockDto.getReceptionDetails().isEmpty()) {
             for (ReceptionDetail detail : receptionStock.getReceptionDetails()) {
                 // Mettre à jour l'inventaire et créer un mouvement pour chaque détail
                 updateInventoryAndCreateMovement(detail, receptionStock);
             }
         }
-
         logger.debug("Entité ReceptionStock après la sauvegarde avec ID : {}", receptionStock.getId());
         if (receptionStock.getId() == null) {
             logger.error("L'ID de ReceptionStock est null après la sauvegarde.");
             throw new IllegalStateException("L'ID de ReceptionStock ne peut pas être null après la sauvegarde.");
         }
-
         ReceptionStockDto savedReceptionStockDto = receptionStockMapper.toDto(receptionStock);
         logger.info("Fin de la méthode saveReception avec savedReceptionStockDto : {}", savedReceptionStockDto);
         return savedReceptionStockDto;
+    }
+
+    @Override
+    public void annulerReception(Long id, String raison) {
+        ReceptionStock receptionStock = receptionStockRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Réception non trouvée avec l'id: " + id));
+        // Vérifier si la réception a déjà été annulée
+        if (receptionStock.isEstAnnulee()) {
+            throw new IllegalStateException("La réception avec l'id: " + id + " a déjà été annulée.");
+        }
+        // Mettre à jour l'état de la réception pour indiquer qu'elle a été annulée
+        receptionStock.setEstAnnulee(true);
+        receptionStockRepository.save(receptionStock);
+        Annulation annulation = new Annulation();
+        String refAnnulation = genererRefAnnulation(); // Générer une seule référence pour l'annulation
+        annulation.setRef(refAnnulation);
+        annulation.setRefOperation(receptionStock.getReference()); // Assurez-vous que cette référence est correctement définie
+        annulation.setDateAnnulation(LocalDate.now());
+        annulation.setRaison(raison);
+        annulationRepository.save(annulation);
+        // Inverser les effets de la réception sur l'inventaire
+        for (ReceptionDetail detail : receptionStock.getReceptionDetails()) {
+            inverserMouvementEtMettreAJourInventaire(detail);
+        }
+        logger.info("La réception a été annulée pour la raison: {}", raison);
+    }
+
+    private void inverserMouvementEtMettreAJourInventaire(ReceptionDetail detail) {
+        // Trouver l'inventaire associé et ajuster les quantités
+        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
+                        detail.getArticle().getIdArticle(), detail.getReceptionStock().getEntrepot().getIdEntre())
+                .orElseThrow(() -> new RuntimeException("Inventaire non trouvé pour l'article: "
+                        + detail.getArticle().getIdArticle() + " et entrepôt: "
+                        + detail.getReceptionStock().getEntrepot().getIdEntre()));
+        // Ajuster les quantités conformes et non conformes
+        int quantityChange = -detail.getQuantity();
+        if (Etat.CONFORME.equals(detail.getEtat())) {
+            inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() + quantityChange);
+        } else {
+            inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + quantityChange);
+        }
+        inventaireRepository.save(inventaire);
+        // Créer un mouvement inverse pour annuler le mouvement précédent
+        Mouvement mouvementInverse = new Mouvement();
+        mouvementInverse.setInventaire(inventaire);
+        mouvementInverse.setDateMouvement(LocalDateTime.now());
+        mouvementInverse.setQuantiteChange(quantityChange);
+        mouvementInverse.setCondition(detail.getEtat().name());
+        mouvementInverse.setType(TypeMouvement.SORTIE);
+        mouvementInverse.setReference(detail.getReceptionStock().getReference());
+        mouvementRepository.save(mouvementInverse);
+    }
+
+    private String genererRefAnnulation() {
+        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        int count = annulationRepository.countAnnulationForToday() + 1;
+        return "AN" + datePart + String.format("%04d", count);
     }
 
     private void updateInventoryAndCreateMovement(ReceptionDetail detail, ReceptionStock receptionStock) {

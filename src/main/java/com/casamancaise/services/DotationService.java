@@ -3,11 +3,16 @@ package com.casamancaise.services;
 import com.casamancaise.dto.DotationDto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DotationService {
-    DotationDto createDotation(DotationDto dotationDto);
-    DotationDto updateDotation(Long id, DotationDto dotationDto);
+    DotationDto saveDotation(DotationDto dotationDto);
+
     DotationDto getDotationById(Long id);
-    List<DotationDto> getAllDotations();
+
     void deleteDotation(Long id);
+
+    List<DotationDto> getAllDotations();
+
+    Optional<DotationDto> findByReference(String reference);
 }

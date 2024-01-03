@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "dotation")
+@Table(name = "dotations")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,12 +20,14 @@ public class Dotation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String reference;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "entrepot_id")
+    private Entrepot entrepot;
     private String destinataire;
-    @ManyToOne
-    private Article article;
-
     private LocalDate dateDotation;
-    private Integer quantite;
-
     private String motif;
+    @OneToMany(mappedBy = "dotation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetailsDotation> detailsDotation;
 }

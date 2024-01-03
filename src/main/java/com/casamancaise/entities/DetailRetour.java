@@ -1,10 +1,14 @@
 package com.casamancaise.entities;
 
+import com.casamancaise.enums.Etat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
+
 @Entity
 @Table(name = "detail_retour")
 @Getter
@@ -26,7 +30,5 @@ public class DetailRetour implements Serializable {
     private Integer quantiteRetournee;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     private Etat etat;
-
 }

@@ -1,14 +1,19 @@
 package com.casamancaise.services;
 
 import com.casamancaise.dao.*;
-import com.casamancaise.dto.*;
+import com.casamancaise.dto.ClientDto;
+import com.casamancaise.dto.TransferDetailsDto;
+import com.casamancaise.dto.TransfertDto;
 import com.casamancaise.entities.*;
-import com.casamancaise.mapping.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.casamancaise.enums.EtatTransfert;
+import com.casamancaise.enums.TypeDestinataire;
+import com.casamancaise.enums.TypeMouvement;
+import com.casamancaise.mapping.TransfertDetailsMapper;
+import com.casamancaise.mapping.TransfertMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,29 +22,34 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class TransfertServiceImpl implements TransfertService {
-    private static final Logger logger = LoggerFactory.getLogger(TransfertServiceImpl.class);
+    private final TransfertRepository transfertRepository;
+    private final TransfertMapper transfertMapper;
+    private final TransfertDetailsMapper transfertDetailsMapper;
+    private final MouvementRepository mouvementRepository;
+    private final ClientRepository clientRepository;
+    private final ClientService clientService;
+    private final InventaireRepository inventaireRepository;
+    private final EntrepotRepository entrepotRepository;
 
-    @Autowired
-    private TransfertRepository transfertRepository;
-    @Autowired
-    private TransfertMapper transfertMapper;
-    @Autowired
-    private TransfertDetailsMapper transfertDetailsMapper;
-    @Autowired
-    private MouvementRepository mouvementRepository;
-    @Autowired
-    private ClientRepository clientRepository;
-    @Autowired
-    private ClientService clientService;
-    @Autowired
-    private InventaireRepository inventaireRepository;
-    @Autowired
-    private EntrepotRepository entrepotRepository;
+    private AnnulationRepository annulationRepository;
+
+    public TransfertServiceImpl(TransfertRepository transfertRepository, TransfertMapper transfertMapper, TransfertDetailsMapper transfertDetailsMapper, MouvementRepository mouvementRepository, ClientRepository clientRepository, ClientService clientService, InventaireRepository inventaireRepository, EntrepotRepository entrepotRepository,AnnulationRepository annulationRepository) {
+        this.transfertRepository = transfertRepository;
+        this.transfertMapper = transfertMapper;
+        this.transfertDetailsMapper = transfertDetailsMapper;
+        this.mouvementRepository = mouvementRepository;
+        this.clientRepository = clientRepository;
+        this.clientService = clientService;
+        this.inventaireRepository = inventaireRepository;
+        this.entrepotRepository = entrepotRepository;
+        this.annulationRepository = annulationRepository;
+    }
 
     @Override
     public TransfertDto saveTransfert(TransfertDto transfertDto) {
-        logger.info("Début de la méthode saveTransfert avec transfertDto: {}", transfertDto);
+        log.info("Début de la méthode saveTransfert avec transfertDto: {}", transfertDto);
         LocalDate today = LocalDate.now();
 
         // Initialiser canalDistrib en fonction du type de destinataire
@@ -62,7 +72,7 @@ public class TransfertServiceImpl implements TransfertService {
         if (transfertDto.getTransferDetails() != null && !transfertDto.getTransferDetails().isEmpty()) {
             transfert.getTransferDetails().clear(); // Nettoyer les anciens détails si nécessaire
             for (TransferDetailsDto detailDto : transfertDto.getTransferDetails()) {
-                logger.debug("Traitement du TransferDetailsDto : {}", detailDto);
+                log.debug("Traitement du TransferDetailsDto : {}", detailDto);
                 TransferDetails detail = transfertDetailsMapper.toEntity(detailDto);
                 detail.setTransfert(transfert); // Associer chaque détail au transfert
                 transfert.getTransferDetails().add(detail);
@@ -74,26 +84,26 @@ public class TransfertServiceImpl implements TransfertService {
 
         // Gérer l'inventaire et les mouvements en fonction de l'état du transfert
         if (transfert.getEtat() == EtatTransfert.EN_COURS) {
-            adjustSourceInventoryAndRecordMovement(transfert, TypeMouvement.SORTIE);
+            adjustSourceInventoryAndRecordMovement(transfert);
         } else if (transfert.getEtat() == EtatTransfert.TERMINE && transfert.getTypeDestinataire() == TypeDestinataire.ENTREPOT) {
-            adjustDestinationInventoryAndRecordMovement(transfert, TypeMouvement.ENTREE);
+            adjustDestinationInventoryAndRecordMovement(transfert);
         }
 
-        logger.debug("Entité Transfert après la sauvegarde avec ID : {}", transfert.getId());
+        log.debug("Entité Transfert après la sauvegarde avec ID : {}", transfert.getId());
         if (transfert.getId() == null) {
-            logger.error("L'ID de Transfert est null après la sauvegarde.");
+            log.error("L'ID de Transfert est null après la sauvegarde.");
             throw new IllegalStateException("L'ID de Transfert ne peut pas être null après la sauvegarde.");
         }
 
         TransfertDto savedTransfertDto = transfertMapper.toDto(transfert);
-        logger.info("Fin de la méthode saveTransfert avec savedTransfertDto : {}", savedTransfertDto);
+        log.info("Fin de la méthode saveTransfert avec savedTransfertDto : {}", savedTransfertDto);
         return savedTransfertDto;
     }
 
     @Override
     public TransfertDto updateTransfertStatus(Long id, EtatTransfert etat) {
         Transfert transfert = transfertRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transfert non trouvé avec l'id: " + id));
+                .orElseThrow(() -> new RuntimeException("Le Transfert avec l'id: " + id +"n'existe pas"));
         transfert.setEtat(etat);
         if (etat == EtatTransfert.TERMINE) {
             handleTransfertCompletion(transfert);
@@ -105,34 +115,35 @@ public class TransfertServiceImpl implements TransfertService {
     private void handleTransfertCompletion(Transfert transfert) {
         // Si le transfert est terminé et le destinataire est un entrepôt, ajuster l'inventaire de l'entrepôt destinataire
         if (transfert.getTypeDestinataire() == TypeDestinataire.ENTREPOT) {
-            adjustDestinationInventoryAndRecordMovement(transfert, TypeMouvement.ENTREE);
+            adjustDestinationInventoryAndRecordMovement(transfert);
         }
     }
+
     @Override
     public TransfertDto recevoirTransfert(Long id, LocalDate dateLivraison) {
-        logger.info("Début de la reception du transfert pour l'ID de transfert: {}", id);
+        log.info("Début de la reception du transfert pour l'ID de transfert: {}", id);
 
         Transfert transfert = transfertRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transfert non trouvé avec l'id: " + id));
+                .orElseThrow(() -> new RuntimeException("Impossible de faire cette reception car ce transfert n'existe pas "));
 
         if (!transfert.getEtat().equals(EtatTransfert.EN_COURS)) {
-            logger.warn("Tentative de réception d'un transfert qui n'est en cours. ID: {}", id);
+            log.warn("Tentative de réception d'un transfert qui n'est en cours. ID: {}", id);
             throw new IllegalStateException("Seuls les transferts en cours peuvent être reçus.");
         }
 
-        logger.info("Le transfert est en cours et prêt à être reçu. ID: {}", id);
+        log.info("Le transfert est en cours et prêt à être reçu. ID: {}", id);
 
         transfert.setEtat(EtatTransfert.TERMINE);
         transfert.setReceptionDate(dateLivraison);
 
         if (transfert.getTypeDestinataire() == TypeDestinataire.ENTREPOT) {
-            adjustDestinationInventoryAndRecordMovement(transfert, TypeMouvement.ENTREE);
-            logger.info("Ajustement de l'inventaire effectué pour l'entrepôt destinataire. ID de transfert: {}", id);
+            adjustDestinationInventoryAndRecordMovement(transfert);
+            log.info("Ajustement de l'inventaire effectué pour l'entrepôt destinataire. ID de transfert: {}", id);
         }
 
         transfert = transfertRepository.save(transfert);
 
-        logger.info("Transfert reçu avec succès. ID de transfert: {}", id);
+        log.info("Transfert reçu avec succès. ID de transfert: {}", id);
 
         return transfertMapper.toDto(transfert);
     }
@@ -141,7 +152,7 @@ public class TransfertServiceImpl implements TransfertService {
     @Override
     public TransfertDto getTransfertById(Long id) {
         Transfert transfert = transfertRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transfert non trouvé avec l'id: " + id));
+                .orElseThrow(() -> new RuntimeException("Le transfert non trouvé avec l'id: " + id));
         return transfertMapper.toDto(transfert);
     }
 
@@ -158,7 +169,7 @@ public class TransfertServiceImpl implements TransfertService {
                 .map(transfertMapper::toDto);
     }
 
-    private void adjustDestinationInventoryAndRecordMovement(Transfert transfert, TypeMouvement typeMouvement) {
+    private void adjustDestinationInventoryAndRecordMovement(Transfert transfert) {
         if (transfert.getTypeDestinataire() == TypeDestinataire.ENTREPOT) {
             Entrepot entrepotDestinataire = entrepotRepository.findById(transfert.getDestinataireId())
                     .orElseThrow(() -> new RuntimeException("Entrepôt destinataire non trouvé avec l'ID: " + transfert.getDestinataireId()));
@@ -169,11 +180,11 @@ public class TransfertServiceImpl implements TransfertService {
                         .orElseGet(() -> new Inventaire(null, entrepotDestinataire, detail.getArticle(), 0, 0));
                 inventaireDest.setQuantiteConforme(inventaireDest.getQuantiteConforme() + totalQuantite);
                 inventaireRepository.save(inventaireDest);
-
                 createMouvement(detail, transfert, totalQuantite, TypeMouvement.ENTREE);
             }
         }
     }
+
     private void annulerAjustementsEtMouvements(Transfert transfert) {
         if (transfert.getTypeDestinataire() == TypeDestinataire.ENTREPOT) {
             annulerAjustementsInventaireEntrepotDestinataire(transfert);
@@ -190,21 +201,20 @@ public class TransfertServiceImpl implements TransfertService {
 
             Inventaire inventaireDest = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
                             detail.getArticle().getIdArticle(), entrepotDestinataire.getIdEntre())
-                    .orElseThrow(() -> new RuntimeException("Inventaire non trouvé pour l'article: " + detail.getArticle().getIdArticle()));
-
+                    .orElseThrow(() -> new RuntimeException("Cette article n'existe pas dans le stock: " + detail.getArticle().getIdArticle()));
             inventaireDest.setQuantiteConforme(inventaireDest.getQuantiteConforme() - totalQuantite);
             inventaireRepository.save(inventaireDest);
-
             createMouvement(detail, transfert, -totalQuantite, TypeMouvement.SORTIE);
         }
     }
+
     private void annulerAjustementsInventaireEntrepotSource(Transfert transfert) {
         // Réintégrer les articles dans l'inventaire de l'entrepôt source
         for (TransferDetails detail : transfert.getTransferDetails()) {
             int totalQuantite = detail.getQuantite() + (detail.getBonus() != null ? detail.getBonus() : 0);
             Inventaire inventaireSource = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
                             detail.getArticle().getIdArticle(), transfert.getFromEntrepot().getIdEntre())
-                    .orElseThrow(() -> new RuntimeException("Inventaire non trouvé pour l'article: " + detail.getArticle().getIdArticle()));
+                    .orElseThrow(() -> new RuntimeException("l'article: " + detail.getArticle().getIdArticle()+"n'existe pas dans ce stock"));
 
             inventaireSource.setQuantiteConforme(inventaireSource.getQuantiteConforme() + totalQuantite);
             inventaireRepository.save(inventaireSource);
@@ -212,6 +222,7 @@ public class TransfertServiceImpl implements TransfertService {
             createMouvement(detail, transfert, totalQuantite, TypeMouvement.ENTREE);
         }
     }
+
     @Override
     public TransfertDto annulerTransfert(String reference) {
         Transfert transfert = transfertRepository.findByReference(reference)
@@ -224,7 +235,51 @@ public class TransfertServiceImpl implements TransfertService {
         transfert = transfertRepository.save(transfert);
         return transfertMapper.toDto(transfert);
     }
-    private void adjustSourceInventoryAndRecordMovement(Transfert transfert, TypeMouvement typeMouvement) {
+
+    public void annulerTransfert(Long id, String raison) {
+        Transfert transfert = transfertRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transfert non trouvé avec l'id: " + id));
+
+        if (transfert.getEtat().equals(EtatTransfert.ANNULE)) {
+            throw new IllegalStateException("Le transfert avec l'id: " + id + " a déjà été annulé.");
+        }
+
+        transfert.setEtat(EtatTransfert.ANNULE);
+        transfertRepository.save(transfert);
+
+        Annulation annulation = new Annulation();
+        annulation.setRefOperation(transfert.getReference());
+        annulation.setDateAnnulation(LocalDate.now());
+        annulation.setRaison(raison);
+        annulationRepository.save(annulation);
+
+        for (TransferDetails detail : transfert.getTransferDetails()) {
+            inverserMouvementEtMettreAJourInventaire(detail);
+        }
+    }
+
+    private void inverserMouvementEtMettreAJourInventaire(TransferDetails detail) {
+        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
+                        detail.getArticle().getIdArticle(), detail.getTransfert().getFromEntrepot().getIdEntre())
+                .orElseThrow(() -> new RuntimeException("Inventaire non trouvé pour l'article: "
+                        + detail.getArticle().getIdArticle() + " et entrepôt: "
+                        + detail.getTransfert().getFromEntrepot().getIdEntre()));
+
+        int quantityChange = detail.getQuantite();
+        inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() + quantityChange);
+        inventaireRepository.save(inventaire);
+
+        Mouvement mouvementInverse = new Mouvement();
+        mouvementInverse.setInventaire(inventaire);
+        mouvementInverse.setDateMouvement(LocalDateTime.now());
+        mouvementInverse.setQuantiteChange(-quantityChange);
+        mouvementInverse.setCondition("CONFORME");
+        mouvementInverse.setType(TypeMouvement.ENTREE);
+        mouvementInverse.setReference(detail.getTransfert().getReference());
+        mouvementRepository.save(mouvementInverse);
+    }
+
+    private void adjustSourceInventoryAndRecordMovement(Transfert transfert) {
         for (TransferDetails detail : transfert.getTransferDetails()) {
             int totalQuantite = detail.getQuantite() + (detail.getBonus() != null ? detail.getBonus() : 0);
             Inventaire inventaireSource = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
@@ -232,9 +287,10 @@ public class TransfertServiceImpl implements TransfertService {
                     .orElseThrow(() -> new RuntimeException("Inventaire non trouvé pour l'article: " + detail.getArticle().getIdArticle()));
             inventaireSource.setQuantiteConforme(inventaireSource.getQuantiteConforme() - totalQuantite);
             inventaireRepository.save(inventaireSource);
-            createMouvement(detail, transfert, -totalQuantite, typeMouvement.SORTIE);
+            createMouvement(detail, transfert, -totalQuantite, TypeMouvement.SORTIE);
         }
     }
+
     private void createMouvement(TransferDetails detail, Transfert transfert, int quantityChange, TypeMouvement typeMouvement) {
         Mouvement mouvement = new Mouvement();
         // S'il s'agit d'un transfert vers un entrepôt, trouver ou créer l'inventaire pour l'entrepôt destinataire
@@ -251,14 +307,17 @@ public class TransfertServiceImpl implements TransfertService {
         mouvement.setReference(transfert.getReference());
         mouvementRepository.save(mouvement);
     }
+
     private Entrepot getEntrepotById(Integer entrepotId) {
         return entrepotRepository.findById(entrepotId)
                 .orElseThrow(() -> new RuntimeException("Entrepôt non trouvé avec l'ID: " + entrepotId));
     }
+
     private Inventaire findOrCreateInventaire(Article article, Entrepot entrepot) {
         return inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(article.getIdArticle(), entrepot.getIdEntre())
                 .orElseGet(() -> new Inventaire(null, entrepot, article, 0, 0));
     }
+
     @Override
     public TransfertDto updateTransfertDestinataire(Long id, TypeDestinataire nouveauTypeDestinataire, Integer nouveauDestinataireId) {
         Transfert transfert = transfertRepository.findById(id)
@@ -283,7 +342,7 @@ public class TransfertServiceImpl implements TransfertService {
         return transfertMapper.toDto(transfert);
     }
 
-    private void verifierExistenceDestinataire(TypeDestinataire typeDestinataire, Integer destinataireId, Integer canalDistribId) {
+    private void verifierExistenceDestinataire(TypeDestinataire typeDestinataire, Integer destinataireId, Integer canalDistribId) throws RuntimeException {
         if (typeDestinataire == TypeDestinataire.ENTREPOT) {
             if (!entrepotRepository.existsById(destinataireId)) {
                 throw new RuntimeException("Entrepôt destinataire non trouvé avec l'ID: " + destinataireId);
@@ -303,9 +362,10 @@ public class TransfertServiceImpl implements TransfertService {
             throw new IllegalArgumentException("Type de destinataire inconnu: " + typeDestinataire);
         }
     }
+
     private String generateReference() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        logger.info("Nombre de transferts pour aujourd'hui (avant incrémentation) : {}", datePart);
+        log.info("Nombre de transferts pour aujourd'hui (avant incrémentation) : {}", datePart);
         int count = transfertRepository.countTransfert() + 1;
         return "TR" + datePart + String.format("%04d", count);
     }

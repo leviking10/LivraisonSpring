@@ -5,13 +5,16 @@ import com.casamancaise.dao.MouvementRepository;
 import com.casamancaise.dao.MouvementSortieRepository;
 import com.casamancaise.dto.MouvementSortieDetailDto;
 import com.casamancaise.dto.MouvementSortieDto;
-import com.casamancaise.dto.ReceptionStockDto;
-import com.casamancaise.entities.*;
+import com.casamancaise.entities.Inventaire;
+import com.casamancaise.entities.Mouvement;
+import com.casamancaise.entities.MouvementSortie;
+import com.casamancaise.entities.MouvementSortieDetail;
+import com.casamancaise.enums.Etat;
+import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.MouvementSortieDetailMapper;
 import com.casamancaise.mapping.MouvementSortieMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,24 +23,27 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Transactional
 public class MvtSortieServiceImpl implements MvtSortieService {
     private static final Logger logger = LoggerFactory.getLogger(MvtSortieServiceImpl.class);
-    @Autowired
-    private  MouvementSortieRepository mouvementSortieRepository;
-    @Autowired
-    private MouvementRepository mouvementRepository;
-    @Autowired
-    private MouvementSortieDetailMapper mouvementSortieDetailMapper;
-    @Autowired
-    private InventaireRepository inventaireRepository;
-    @Autowired
-    private  MouvementSortieMapper mouvementSortieMapper;
+    private final MouvementSortieRepository mouvementSortieRepository;
+    private final MouvementRepository mouvementRepository;
+    private final MouvementSortieDetailMapper mouvementSortieDetailMapper;
+    private final InventaireRepository inventaireRepository;
+    private final MouvementSortieMapper mouvementSortieMapper;
+
+    public MvtSortieServiceImpl(MouvementSortieRepository mouvementSortieRepository, MouvementRepository mouvementRepository, MouvementSortieDetailMapper mouvementSortieDetailMapper, InventaireRepository inventaireRepository, MouvementSortieMapper mouvementSortieMapper) {
+        this.mouvementSortieRepository = mouvementSortieRepository;
+        this.mouvementRepository = mouvementRepository;
+        this.mouvementSortieDetailMapper = mouvementSortieDetailMapper;
+        this.inventaireRepository = inventaireRepository;
+        this.mouvementSortieMapper = mouvementSortieMapper;
+    }
+
     @Override
-    public MouvementSortieDto SaveMvtSortie(MouvementSortieDto mvtSortieDto) {
+    public MouvementSortieDto saveMvtSortie(MouvementSortieDto mvtSortieDto) {
         logger.info("Début de la méthode SaveMvtSortie avec mvtSortieDto: {}", mvtSortieDto);
 
         // Définir la date du jour
@@ -80,7 +86,7 @@ public class MvtSortieServiceImpl implements MvtSortieService {
         return savedMouvementSortieDto;
     }
 
-    private void updateInventoryAndCreateMovement(MouvementSortieDetail detail, MouvementSortie mvtSortie) {
+    private void updateInventoryAndCreateMovement(MouvementSortieDetail detail, MouvementSortie mvtSortie) throws RuntimeException {
         logger.debug("Mise à jour de l'inventaire et création d'un mouvement pour l'article ID : {}", detail.getArticle().getIdArticle());
         // Logique d'inventaire et de création de mouvement
         final Long articleId = detail.getArticle().getIdArticle();
@@ -88,7 +94,7 @@ public class MvtSortieServiceImpl implements MvtSortieService {
         Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(articleId, entrepotId)
                 .orElseThrow(() -> new RuntimeException("Stock non trouvé pour Article ID: " + articleId + " et Entrepot ID: " + entrepotId));
         if (inventaire.getQuantiteConforme() < detail.getQuantite()) {
-            throw new RuntimeException("Quantité insuffisante en inventaire pour l'article ID: " + articleId);
+            throw new RuntimeException("Quantité de stock insuffisante  pour cette article ID: " + articleId);
         }
         inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() - detail.getQuantite());
         inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + detail.getQuantite());
@@ -110,12 +116,14 @@ public class MvtSortieServiceImpl implements MvtSortieService {
                 .orElseThrow(() -> new RuntimeException("Mouvement de sortie non trouvée avec l'id: " + id));
         return mouvementSortieMapper.toDto(mouvementSortie);
     }
+
     private String generateReference() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int countToday = mouvementSortieRepository.countMvtSortie(LocalDate.now()) + 1;
         logger.info("Nombre de mouvements de sortie pour aujourd'hui (avant incrémentation) : {}", countToday);
         return "MS" + datePart + String.format("%04d", countToday);
     }
+
     @Override
     public List<MouvementSortieDto> getAllMvtSorties() {
         List<MouvementSortie> mvtSorties = mouvementSortieRepository.findAll();
@@ -123,7 +131,7 @@ public class MvtSortieServiceImpl implements MvtSortieService {
     }
 
     @Override
-    public Optional<MouvementSortieDto>  findByReference(String reference) {
+    public Optional<MouvementSortieDto> findByReference(String reference) {
         return mouvementSortieRepository.findByReference(reference)
                 .map(mouvementSortieMapper::toDto);
     }

@@ -1,7 +1,6 @@
 package com.casamancaise.dao;
 
 import com.casamancaise.entities.MouvementSortie;
-import com.casamancaise.entities.ReceptionStock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

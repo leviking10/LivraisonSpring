@@ -1,11 +1,13 @@
 package com.casamancaise.dto;
 
-import com.casamancaise.entities.EtatTransfert;
-import com.casamancaise.entities.TypeDestinataire;
-import lombok.*;
+import com.casamancaise.enums.EtatTransfert;
+import com.casamancaise.enums.TypeDestinataire;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -21,7 +23,7 @@ public class TransfertDto {
     private Long vehiculeId; // ID du véhicule utilisé pour le transfert
     private EtatTransfert etat;
     private String reference;
-    private LocalDate ReceptionDate;
+    private LocalDate receptionDate;
     // Liste des détails de transfert, représentée par des DTOs
-    private List<TransferDetailsDto> transferDetails;        // ID du véhicule utilisé pour le transfert
+    private List<TransferDetailsDto> transferDetails;
 }

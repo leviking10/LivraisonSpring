@@ -5,12 +5,11 @@ import com.casamancaise.dao.InventaireRepository;
 import com.casamancaise.dao.MouvementRepository;
 import com.casamancaise.dao.ReceptionStockRepository;
 import com.casamancaise.dto.AnnulationDto;
-import com.casamancaise.dto.ReceptionStockDto;
 import com.casamancaise.entities.*;
+import com.casamancaise.enums.Etat;
+import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.AnnulationMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,48 +21,41 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class AnnulationServiceImpl implements AnnulationService {
-    @Autowired
-    private AnnulationRepository annulationRepository;
-    @Autowired
-    private ReceptionStockRepository receptionStockRepository;
-    @Autowired
-    private InventaireRepository inventaireRepository;
+    private final AnnulationRepository annulationRepository;
+    private final ReceptionStockRepository receptionStockRepository;
+    private final InventaireRepository inventaireRepository;
+    private final AnnulationMapper annulationMapper;
+    private final MouvementRepository mouvementRepository;
+    public AnnulationServiceImpl(AnnulationRepository annulationRepository, ReceptionStockRepository receptionStockRepository, InventaireRepository inventaireRepository, AnnulationMapper annulationMapper, MouvementRepository mouvementRepository) {
+        this.annulationRepository = annulationRepository;
+        this.receptionStockRepository = receptionStockRepository;
+        this.inventaireRepository = inventaireRepository;
+        this.annulationMapper = annulationMapper;
+        this.mouvementRepository = mouvementRepository;
+    }
 
-    @Autowired
-    private AnnulationMapper annulationMapper;
-    @Autowired
-    private MouvementRepository mouvementRepository;
-
-    private static final Logger logger = LoggerFactory.getLogger(AnnulationServiceImpl.class);
-
-    @Override
     public AnnulationDto createAnnulation(AnnulationDto annulationDto) {
-        logger.info("Création d'une annulation avec les données : {}", annulationDto);
-        if (annulationRepository.existsByRefReception(annulationDto.getRefReception())) {
-            throw new IllegalStateException("Une annulation existe déjà pour cette référence: " + annulationDto.getRefReception());
-        }
+        log.info("Création d'une annulation avec les données : {}", annulationDto);
         // Définir la date du jour
         LocalDate today = LocalDate.now();
         Annulation annulation = annulationMapper.toEntity(annulationDto);
         String refAnnulation = genererRefAnnulation(); // Générer une seule référence pour l'annulation
         annulation.setRef(refAnnulation);
         annulation.setDateAnnulation(today);
-        logger.info("Entité Annulation après la conversion du DTO : {}", annulation);
-
-        ReceptionStock receptionStock = receptionStockRepository.findByReference(annulationDto.getRefReception())
-                .orElseThrow(() -> new RuntimeException("Réception non trouvée avec la référence: " + annulationDto.getRefReception()));
+        log.info("Entité Annulation après la conversion du DTO : {}", annulation);
+        ReceptionStock receptionStock = receptionStockRepository.findByReference(annulationDto.getRefOperation())
+                .orElseThrow(() -> new RuntimeException("Réception non trouvée avec la référence: " + annulationDto.getRefOperation()));
 
         for (ReceptionDetail detail : receptionStock.getReceptionDetails()) {
             inverserMouvementEtMettreAJourInventaire(detail, receptionStock, refAnnulation); // Utiliser la référence générée
         }
-
         annulation = annulationRepository.save(annulation);
-        logger.info("Annulation enregistrée avec succès : {}", annulation);
+        log.info("Annulation enregistrée avec succès : {}", annulation);
 
         return annulationMapper.toDto(annulation);
     }
-
     private String genererRefAnnulation() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int count = annulationRepository.countAnnulationForToday() + 1;
@@ -91,7 +83,6 @@ public class AnnulationServiceImpl implements AnnulationService {
         mouvementInverse.setReference(refAnnulation); // Utiliser la référence d'annulation générée
         mouvementRepository.save(mouvementInverse);
     }
-
     @Override
     public AnnulationDto getAnnulationById(Long id) {
         Annulation annulation = annulationRepository.findById(id)
@@ -104,11 +95,9 @@ public class AnnulationServiceImpl implements AnnulationService {
                 .map(annulationMapper::toDto)
                 .toList();
     }
-
     @Override
     public Optional<AnnulationDto> findByRef(String reference) {
         return annulationRepository.findByRef(reference)
                 .map(annulationMapper::toDto);
     }
-
 }

@@ -11,12 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class InventaireServiceImpl implements InventaireService {
-
     private final InventaireRepository inventaireRepository;
     private final InventaireMapper inventaireMapper;
 
@@ -29,7 +27,7 @@ public class InventaireServiceImpl implements InventaireService {
     @Override
     @Transactional
     public InventaireDto updateInventory(Long idArticle, int idEntre, int quantiteConforme, int quantiteNonConforme) {
-        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(idArticle,idEntre)
+        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(idArticle, idEntre)
                 .orElse(new Inventaire());
         inventaire.setArticle(new Article(idArticle));
         inventaire.setEntrepot(new Entrepot(idEntre));
@@ -38,10 +36,11 @@ public class InventaireServiceImpl implements InventaireService {
         Inventaire savedInventaire = inventaireRepository.save(inventaire);
         return inventaireMapper.toDto(savedInventaire);
     }
+
     @Override
     public InventaireDto getInventoryByArticleAndEntrepot(Long idArticle, int idEntre) {
-        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(idArticle,idEntre)
-                .orElseThrow(() -> new IllegalStateException("Inventaire non trouvé pour l'article id: " + idArticle+ " et entrepôt id: " + idEntre));
+        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(idArticle, idEntre)
+                .orElseThrow(() -> new IllegalStateException("Inventaire non trouvé pour l'article id: " + idArticle + " et entrepôt id: " + idEntre));
         return inventaireMapper.toDto(inventaire);
     }
 
@@ -50,6 +49,6 @@ public class InventaireServiceImpl implements InventaireService {
         List<Inventaire> inventaireList = inventaireRepository.findAll();
         return inventaireList.stream()
                 .map(inventaireMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

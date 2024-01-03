@@ -1,6 +1,10 @@
 package com.casamancaise.entities;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -26,6 +30,5 @@ public class Vente implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entrepot_id")
     private Entrepot entrepot;
-
     private LocalDate dateVente;
 }

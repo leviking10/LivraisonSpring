@@ -35,7 +35,7 @@ public class MouvementController {
 
     @GetMapping("/date")
     public ResponseEntity<List<MouvementDto>> getMovementsByDateRange(
-            @RequestParam @DateTimeFormat (iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         List<MouvementDto> mouvements = mouvementService.getMovementsByDateRange(startDate, endDate);

@@ -9,11 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class EmployeeServiceImpl implements EmployeeService{
+public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
 
@@ -58,7 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         Employee existingEmployee = employeeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
         // Map the DTO to the existing entity
-        employeeMapper. updateEmployeeFromDto(employeeDto, existingEmployee);
+        employeeMapper.updateEmployeeFromDto(employeeDto, existingEmployee);
         // Save the updated entity to the database
         existingEmployee = employeeRepository.save(existingEmployee);
         // Convert the updated entity to DTO
