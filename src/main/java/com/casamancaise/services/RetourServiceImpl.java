@@ -92,9 +92,8 @@ public class RetourServiceImpl implements RetourService {
         Transfert transfert = transfertRepository.findById(retourDto.getOperationId())
                 .orElseThrow(() -> new RuntimeException("Transfert non trouvé pour l'ID: " + retourDto.getOperationId()));
         // Vérifier si le type de destinataire est 'CLIENT'
-        if (transfert.getTypeDestinataire() != TypeDestinataire.CLIENT) {
+        if (transfert.getTypeDestinataire() != TypeDestinataire.CLIENT)
             throw new RuntimeException("Le transfert avec l'ID: " + retourDto.getOperationId() + " n'est pas destiné à un client");
-        }
         log.info("Traitement du retour pour le transfert destiné au client, ID du transfert: {}", transfert.getId());
 
     }

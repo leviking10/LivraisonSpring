@@ -1,4 +1,4 @@
-package com.casamancaise.exeption;
+package com.casamancaise.exeptions;
 
 import lombok.*;
 import org.springframework.http.HttpStatus;

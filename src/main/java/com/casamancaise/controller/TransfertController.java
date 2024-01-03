@@ -3,7 +3,7 @@ package com.casamancaise.controller;
 import com.casamancaise.dto.TransfertDto;
 import com.casamancaise.dto.UpdateTransfertDestinataireDto;
 import com.casamancaise.enums.EtatTransfert;
-import com.casamancaise.exeption.EntityNotFoundException;
+import com.casamancaise.exeptions.EntityNotFoundException;
 import com.casamancaise.services.TransfertService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

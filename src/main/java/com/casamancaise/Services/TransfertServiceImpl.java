@@ -46,7 +46,6 @@ public class TransfertServiceImpl implements TransfertService {
         this.entrepotRepository = entrepotRepository;
         this.annulationRepository = annulationRepository;
     }
-
     @Override
     public TransfertDto saveTransfert(TransfertDto transfertDto) {
         log.info("Début de la méthode saveTransfert avec transfertDto: {}", transfertDto);
@@ -59,10 +58,8 @@ public class TransfertServiceImpl implements TransfertService {
             ClientDto client = clientService.getClientById(Long.valueOf(transfertDto.getDestinataireId()));
             canalDistribId = client.getCanalDistribId();
         }
-
         // Vérifier l'existence du destinataire avant de continuer
         verifierExistenceDestinataire(transfertDto.getTypeDestinataire(), transfertDto.getDestinataireId(), canalDistribId);
-
         // Convertir DTO en entité
         Transfert transfert = transfertMapper.toEntity(transfertDto);
         transfert.setReference(generateReference());
@@ -344,20 +341,15 @@ public class TransfertServiceImpl implements TransfertService {
 
     private void verifierExistenceDestinataire(TypeDestinataire typeDestinataire, Integer destinataireId, Integer canalDistribId) throws RuntimeException {
         if (typeDestinataire == TypeDestinataire.ENTREPOT) {
-            if (!entrepotRepository.existsById(destinataireId)) {
+            if (!entrepotRepository.existsById(destinataireId))
                 throw new RuntimeException("Entrepôt destinataire non trouvé avec l'ID: " + destinataireId);
-            }
         } else if (typeDestinataire == TypeDestinataire.CLIENT) {
             if (canalDistribId != null) {
                 boolean clientExiste = clientRepository.existsByIdAndCanalDistribId(Long.valueOf(destinataireId), canalDistribId);
-                if (!clientExiste) {
+                if (!clientExiste)
                     throw new RuntimeException("Client destinataire non trouvé avec l'ID: " + destinataireId + " et canal de distribution ID: " + canalDistribId);
-                }
-            } else {
-                if (!clientRepository.existsById(Long.valueOf(destinataireId))) {
-                    throw new RuntimeException("Client destinataire non trouvé avec l'ID: " + destinataireId);
-                }
-            }
+            } else if (!clientRepository.existsById(Long.valueOf(destinataireId)))
+                throw new RuntimeException("Client destinataire non trouvé avec l'ID: " + destinataireId);
         } else {
             throw new IllegalArgumentException("Type de destinataire inconnu: " + typeDestinataire);
         }

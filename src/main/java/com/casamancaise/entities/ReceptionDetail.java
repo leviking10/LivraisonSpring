@@ -32,14 +32,4 @@ public class ReceptionDetail implements Serializable {
     @NotNull
     private Etat etat = Etat.CONFORME;
 
-    @Override
-    public String toString() {
-        return "ReceptionDetail{" +
-                "id=" + id +
-                ", receptionStock=" + receptionStock +
-                ", article=" + article +
-                ", quantity=" + quantity +
-                ", etat=" + etat +
-                '}';
-    }
 }

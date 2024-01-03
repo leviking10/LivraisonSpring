@@ -2,7 +2,6 @@ package com.casamancaise.controller;
 
 import com.casamancaise.dto.VenteDto;
 import com.casamancaise.services.VenteService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,9 +10,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ventes")
 public class VenteController {
-
-    @Autowired
     private VenteService venteService;
+
+    public VenteController(VenteService venteService) {
+        this.venteService = venteService;
+    }
 
     @PostMapping
     public ResponseEntity<VenteDto> createVente(@RequestBody VenteDto venteDto) {

@@ -31,15 +31,4 @@ public class MouvementSortieDetail implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "mouvement_sortie_id", nullable = false)
     private MouvementSortie mouvementSortie;
-
-    @Override
-    public String toString() {
-        return "MouvementSortieDetail{" +
-                "id=" + id +
-                ", article=" + article +
-                ", quantite=" + quantite +
-                ", etat=" + etat +
-                ", mouvementSortie=" + mouvementSortie +
-                '}';
-    }
 }

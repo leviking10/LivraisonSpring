@@ -37,7 +37,7 @@ public class Transfert implements Serializable {
     private String reference;
     private LocalDate transferDate;
     @Column(name = "date_reception")
-    private LocalDate ReceptionDate;
+    private LocalDate receptionDate;
     @OneToMany(mappedBy = "transfert", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransferDetails> transferDetails;
     @ManyToOne(fetch = FetchType.LAZY)

@@ -11,8 +11,7 @@ import com.casamancaise.enums.Etat;
 import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.ReceptionDetailMapper;
 import com.casamancaise.mapping.ReceptionStockMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,8 +23,8 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class ReceptionServiceImpl implements ReceptionService {
-    private static final Logger logger = LoggerFactory.getLogger(ReceptionServiceImpl.class);
     private final ReceptionStockRepository receptionStockRepository;
     private final ReceptionStockMapper receptionStockMapper;
 
@@ -46,7 +45,7 @@ public class ReceptionServiceImpl implements ReceptionService {
 
     @Override
     public ReceptionStockDto saveReception(ReceptionStockDto receptionStockDto) {
-        logger.info("Début de la méthode saveReception avec receptionStockDto: {}", receptionStockDto);
+        log.info("Début de la méthode saveReception avec receptionStockDto: {}", receptionStockDto);
         LocalDate today = LocalDate.now();
         // Convertir DTO en entité
         ReceptionStock receptionStock = receptionStockMapper.toEntity(receptionStockDto);
@@ -57,7 +56,7 @@ public class ReceptionServiceImpl implements ReceptionService {
         if (receptionStockDto.getReceptionDetails() != null && !receptionStockDto.getReceptionDetails().isEmpty()) {
             receptionStock.getReceptionDetails().clear(); // Nettoyer les anciens détails si nécessaire
             for (ReceptionDetailDto detailDto : receptionStockDto.getReceptionDetails()) {
-                logger.debug("Traitement du ReceptionDetailDto : {}", detailDto);
+                log.debug("Traitement du ReceptionDetailDto : {}", detailDto);
                 ReceptionDetail detail = receptionDetailMapper.toEntity(detailDto);
                 detail.setReceptionStock(receptionStock); // Associer chaque détail à la réception
                 receptionStock.getReceptionDetails().add(detail);
@@ -73,13 +72,13 @@ public class ReceptionServiceImpl implements ReceptionService {
                 updateInventoryAndCreateMovement(detail, receptionStock);
             }
         }
-        logger.debug("Entité ReceptionStock après la sauvegarde avec ID : {}", receptionStock.getId());
+        log.debug("Entité ReceptionStock après la sauvegarde avec ID : {}", receptionStock.getId());
         if (receptionStock.getId() == null) {
-            logger.error("L'ID de ReceptionStock est null après la sauvegarde.");
+            log.error("L'ID de ReceptionStock est null après la sauvegarde.");
             throw new IllegalStateException("L'ID de ReceptionStock ne peut pas être null après la sauvegarde.");
         }
         ReceptionStockDto savedReceptionStockDto = receptionStockMapper.toDto(receptionStock);
-        logger.info("Fin de la méthode saveReception avec savedReceptionStockDto : {}", savedReceptionStockDto);
+        log.info("Fin de la méthode saveReception avec savedReceptionStockDto : {}", savedReceptionStockDto);
         return savedReceptionStockDto;
     }
 
@@ -99,14 +98,16 @@ public class ReceptionServiceImpl implements ReceptionService {
         annulation.setRef(refAnnulation);
         annulation.setRefOperation(receptionStock.getReference()); // Assurez-vous que cette référence est correctement définie
         annulation.setDateAnnulation(LocalDate.now());
-        annulation.setRaison(raison);
+        annulation.setRaison(raison); // Assurez-vous que la raison est validée et échappée si nécessaire
         annulationRepository.save(annulation);
         // Inverser les effets de la réception sur l'inventaire
         for (ReceptionDetail detail : receptionStock.getReceptionDetails()) {
             inverserMouvementEtMettreAJourInventaire(detail);
         }
-        logger.info("La réception a été annulée pour la raison: {}", raison);
+        // Log the action without user-controlled data
+        log.info("Réception ID {} a été annulée. Référence d'annulation générée: {}", id, refAnnulation);
     }
+
 
     private void inverserMouvementEtMettreAJourInventaire(ReceptionDetail detail) {
         // Trouver l'inventaire associé et ajuster les quantités
@@ -163,7 +164,7 @@ public class ReceptionServiceImpl implements ReceptionService {
 
     private String generateReference() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        logger.info("Nombre de reception pour aujourd'hui (avant incrémentation) : {}", datePart);
+        log.info("Nombre de reception pour aujourd'hui (avant incrémentation) : {}", datePart);
         int count = receptionStockRepository.countReceptionsForToday() + 1;
         return "RC" + datePart + String.format("%04d", count);
     }

@@ -93,9 +93,8 @@ public class MvtSortieServiceImpl implements MvtSortieService {
         final Integer entrepotId = mvtSortie.getEntrepot().getIdEntre();
         Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(articleId, entrepotId)
                 .orElseThrow(() -> new RuntimeException("Stock non trouvé pour Article ID: " + articleId + " et Entrepot ID: " + entrepotId));
-        if (inventaire.getQuantiteConforme() < detail.getQuantite()) {
+        if (inventaire.getQuantiteConforme() < detail.getQuantite())
             throw new RuntimeException("Quantité de stock insuffisante  pour cette article ID: " + articleId);
-        }
         inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() - detail.getQuantite());
         inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + detail.getQuantite());
         inventaireRepository.save(inventaire);
