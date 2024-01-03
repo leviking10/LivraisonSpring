@@ -1,0 +1,29 @@
+[33m9072929[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m9072929[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m HEAD@{1}: commit: gestion retours
+[33m4dd3753[m HEAD@{2}: pull: Fast-forward
+[33mdf6fcd5[m HEAD@{3}: commit: gestion retours
+[33m51bd5bc[m HEAD@{4}: commit: gestion retours
+[33m14ec47a[m HEAD@{5}: commit: gestion ventes
+[33mb924b96[m HEAD@{6}: commit: gestion transfert
+[33m9965fc8[m HEAD@{7}: commit: renommer
+[33m6204144[m HEAD@{8}: commit: Renommer Entities
+[33mee2ae03[m HEAD@{9}: commit: Ajout de la methode d'annulation d'une reception
+[33m0914889[m HEAD@{10}: commit: six4
+[33m1dd5df9[m HEAD@{11}: commit: six4
+[33md87b624[m HEAD@{12}: commit: six3
+[33m3901698[m HEAD@{13}: commit: six2
+[33mc9bff79[m HEAD@{14}: commit: six1
+[33m9f7630f[m HEAD@{15}: commit: six
+[33mbda1ac1[m HEAD@{16}: commit: six
+[33mc0b8b6a[m HEAD@{17}: commit: Cinq
+[33md27504f[m HEAD@{18}: commit: Cinq
+[33mef56acd[m HEAD@{19}: commit: quatrieme
+[33m1dc1a4e[m HEAD@{20}: checkout: moving from master to master
+[33m1dc1a4e[m HEAD@{21}: checkout: moving from master to master
+[33m1dc1a4e[m HEAD@{22}: merge origin/master: Fast-forward
+[33m0c9c259[m HEAD@{23}: commit: quatrieme Commit
+[33m9dff04d[m HEAD@{24}: commit: troisieme Commit
+[33m84f2d3a[m HEAD@{25}: commit: second commit
+[33m172b8a4[m HEAD@{26}: checkout: moving from dev to master
+[33m172b8a4[m HEAD@{27}: checkout: moving from master to dev
+[33m172b8a4[m HEAD@{28}: commit (initial): Initial commit
