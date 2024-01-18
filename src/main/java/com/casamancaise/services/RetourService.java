@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface RetourService {
     RetourDto saveRetour(RetourDto retourDto);
 
+    void annulerRetour(Long id, String raison);
+
     RetourDto getRetourById(Long id);
 
     void deleteRetour(Long id);

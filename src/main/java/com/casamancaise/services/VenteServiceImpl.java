@@ -1,17 +1,16 @@
 package com.casamancaise.services;
 
-import com.casamancaise.dao.InventaireRepository;
-import com.casamancaise.dao.MouvementRepository;
-import com.casamancaise.dao.VenteRepository;
+import com.casamancaise.dao.*;
 import com.casamancaise.dto.DetailVenteDto;
 import com.casamancaise.dto.VenteDto;
-import com.casamancaise.entities.DetailVente;
-import com.casamancaise.entities.Inventaire;
-import com.casamancaise.entities.Mouvement;
-import com.casamancaise.entities.Vente;
+import com.casamancaise.entities.*;
+import com.casamancaise.enums.Etat;
+import com.casamancaise.enums.StatutVente;
 import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.DetailVenteMapper;
 import com.casamancaise.mapping.VenteMapper;
+import com.casamancaise.myexeptions.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,20 +24,24 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class VenteServiceImpl implements VenteService {
     private static final Logger logger = LoggerFactory.getLogger(VenteServiceImpl.class);
-
     private final VenteRepository venteRepository;
     private final VenteMapper venteMapper;
     private final MouvementRepository mouvementRepository;
     private final InventaireRepository inventaireRepository;
+    private final ClientRepository clientRepository;
     private final DetailVenteMapper detailVenteMapper;
+    private final AnnulationRepository annulationRepository;
 
-    public VenteServiceImpl(VenteRepository venteRepository, VenteMapper venteMapper, MouvementRepository mouvementRepository, InventaireRepository inventaireRepository, DetailVenteMapper detailVenteMapper) {
+    public VenteServiceImpl(VenteRepository venteRepository, VenteMapper venteMapper, MouvementRepository mouvementRepository, InventaireRepository inventaireRepository, AnnulationRepository annulationRepository, ClientRepository clientRepository, DetailVenteMapper detailVenteMapper) {
         this.venteRepository = venteRepository;
         this.venteMapper = venteMapper;
         this.mouvementRepository = mouvementRepository;
         this.inventaireRepository = inventaireRepository;
+        this.annulationRepository = annulationRepository;
+        this.clientRepository = clientRepository;
         this.detailVenteMapper = detailVenteMapper;
     }
 
@@ -46,6 +49,10 @@ public class VenteServiceImpl implements VenteService {
     public VenteDto saveVente(VenteDto venteDto) {
         logger.info("Début de la méthode saveVente avec venteDto: {}", venteDto);
         LocalDate today = LocalDate.now();
+        // Vérifier l'existence du client
+        if (!clientRepository.existsById(venteDto.getClientId())) {
+            throw new EntityNotFoundException("Ce Client avec l'ID: " + venteDto.getClientId() + "n'existe pas");
+        }
 // Vérifier la disponibilité du stock avant de continuer
         if (!verifierDisponibiliteArticle(venteDto)) {
             logger.error("Vente non réalisée en raison d'un stock insuffisant.");
@@ -55,36 +62,54 @@ public class VenteServiceImpl implements VenteService {
         Vente vente = venteMapper.toEntity(venteDto);
         vente.setReference(generateReference());
         vente.setDateVente(today);
-
-        // Associer les détails de vente à l'entité Vente
-        if (venteDto.getDetailVentes() != null && !venteDto.getDetailVentes().isEmpty()) {
-            vente.getDetailVentes().clear(); // Nettoyer les anciens détails si nécessaire
-            for (DetailVenteDto detailDto : venteDto.getDetailVentes()) {
-                logger.debug("Traitement du DetailVenteDto : {}", detailDto);
-                DetailVente detail = detailVenteMapper.toEntity(detailDto);
-                detail.setVente(vente); // Associer chaque détail à la vente
-                vente.getDetailVentes().add(detail);
-            }
+        vente.setStatut(StatutVente.EN_COURS);
+        vente.setDeleted(false);
+        // Associer les détails de vente et mettre à jour l'inventaire
+        vente.getDetailVentes().clear(); // Nettoyer les anciens détails si nécessaire
+        for (DetailVenteDto detailDto : venteDto.getDetailVentes()) {
+            logger.debug("Traitement du DetailVenteDto : {}", detailDto);
+            DetailVente detail = detailVenteMapper.toEntity(detailDto);
+            detail.setVente(vente); // Associer chaque détail à la vente
+            vente.getDetailVentes().add(detail);
+            // Mise à jour de l'inventaire et création de mouvements pour chaque détail
+            updateInventoryAndCreateMovement(detail, vente);
         }
-
         // Sauvegarder l'entité de vente avec tous ses détails
         vente = venteRepository.save(vente);
-
-        // Mettre à jour l'inventaire et créer les mouvements pour chaque détail de vente
-        if (venteDto.getDetailVentes() != null && !venteDto.getDetailVentes().isEmpty()) {
-            for (DetailVente detail : vente.getDetailVentes()) {
-                updateInventoryAndCreateMovement(detail, vente);
-            }
-        }
-
         logger.debug("Entité Vente après la sauvegarde avec ID : {}", vente.getId());
-        if (vente.getId() == null) {
-            logger.error("L'ID de Vente est null après la sauvegarde.");
-            throw new IllegalStateException("L'ID de Vente ne peut pas être null après la sauvegarde.");
-        }
-
         VenteDto savedVenteDto = venteMapper.toDto(vente);
         logger.info("Fin de la méthode saveVente avec savedVenteDto : {}", savedVenteDto);
+        return savedVenteDto;
+    }
+
+    @Override
+    public VenteDto updateVente(Long venteId, Long nouveauClientId) {
+        log.info("Mise à jour du client pour la vente ID: {}", venteId);
+        Vente vente = venteRepository.findById(venteId)
+                .orElseThrow(() -> {
+                    log.error("Vente non trouvée avec l'id: {}", venteId);
+                    return new RuntimeException("Impossible ,Vente non trouvée avec l'id: " + venteId);
+                });
+        // Vérifier si des conditions spécifiques doivent être respectées
+        if (vente.getStatut() != StatutVente.EN_COURS) {
+            throw new EntityNotFoundException("Cette livraison est déjà terminée donc impossible de changer de destinataire pansez à effectuer un bon de retour.");
+        }
+
+        log.info("Vérification de l'existence du nouveau client. ID: {}", nouveauClientId);
+        if (!clientRepository.existsById(nouveauClientId)) {
+            throw new EntityNotFoundException("Client non trouvé avec l'ID: " + nouveauClientId);
+        }
+
+        log.info("Mise à jour du client pour la vente. Nouvel ID Client: {}", nouveauClientId);
+        Client nouveauClient = clientRepository.findById(nouveauClientId)
+                .orElseThrow(() -> new RuntimeException("Client non trouvé avec l'ID: " + nouveauClientId));
+        vente.setClient(nouveauClient);
+
+        log.info("Sauvegarde des modifications pour la vente ID: {}", venteId);
+        vente = venteRepository.save(vente);
+
+        VenteDto savedVenteDto = venteMapper.toDto(vente);
+        log.info("Mise à jour du client terminée pour la vente ID: {}", venteId);
         return savedVenteDto;
     }
 
@@ -124,6 +149,105 @@ public class VenteServiceImpl implements VenteService {
         mouvement.setType(TypeMouvement.SORTIE); // Vente est une sortie de stock
         mouvement.setReference(vente.getReference());
         mouvementRepository.save(mouvement);
+    }
+
+    @Override
+    public VenteDto livrerProduit(Long venteId, LocalDate dateLivraison) {
+        log.info("Début du processus de livraison pour la vente ID: {}", venteId);
+
+        Vente vente = venteRepository.findById(venteId)
+                .orElseThrow(() -> new RuntimeException("Vente non trouvée avec l'ID: " + venteId));
+
+        if (vente.getStatut() != StatutVente.EN_COURS) {
+            log.warn("Tentative de livraison d'une vente qui n'est pas en cours. ID: {}", venteId);
+            throw new IllegalStateException("Seules les ventes en cours peuvent être livrées.");
+        }
+
+        vente.setStatut(StatutVente.LIVREE);
+        vente.setDatelivraison(dateLivraison);
+
+        vente = venteRepository.save(vente);
+        log.info("Vente livrée avec succès.");
+        return venteMapper.toDto(vente);
+    }
+
+    @Override
+    public void annulerVente(Long id, String raison) {
+        Vente vente = venteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Vente non trouvée avec l'id: " + id));
+        // Vérifier que la vente est en cours
+        if (vente.getStatut() != StatutVente.EN_COURS) {
+            throw new IllegalStateException("On ne peut annuler que les ventes en cours.");
+        }
+        verifyNotAlreadyCancelled(vente, id);
+        vente.setDeleted(true);
+        venteRepository.save(vente);
+        String refAnnulation = genererRefAnnulation();
+        Annulation annulation = createAnnulation(vente, refAnnulation, raison);
+        annulationRepository.save(annulation);
+        vente.getDetailVentes().forEach(detail -> {
+            updateInventory(detail, vente);
+            createMovement(detail, vente, TypeMouvement.SORTIE, refAnnulation); // Utilisez refAnnulation ici
+        });
+        log.info("Vente ID {} a été annulée. Référence d'annulation générée: {}", id, refAnnulation);
+    }
+
+    private void createMovement(DetailVente detail, Vente vente, TypeMouvement typeMouvement, String reference) {
+        Mouvement mouvement = new Mouvement();
+        mouvement.setInventaire(getOrCreateInventory(detail, vente));
+        mouvement.setDateMouvement(LocalDateTime.now());
+        mouvement.setQuantiteChange(typeMouvement == TypeMouvement.SORTIE ? -detail.getQuantity() : detail.getQuantity());
+        mouvement.setCondition(detail.getEtat().name());
+        mouvement.setType(typeMouvement);
+        mouvement.setReference(reference);
+        mouvementRepository.save(mouvement);
+    }
+
+    private Inventaire getOrCreateInventory(DetailVente detail, Vente vente) {
+        // Logique pour obtenir l'inventaire existant ou en créer un nouveau
+        return inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
+                        detail.getArticle().getIdArticle(),
+                        vente.getEntrepot().getIdEntre())
+                .orElseGet(() -> new Inventaire(null, vente.getEntrepot(),
+                        detail.getArticle(), 0, 0));
+    }
+
+    private void updateInventory(DetailVente detail, Vente vente) {
+        Inventaire inventaire = getOrCreateInventory(detail, vente);
+        int quantityChange = detail.getQuantity();
+        adjustInventoryQuantities(inventaire, quantityChange, detail.getEtat());
+        inventaireRepository.save(inventaire);
+    }
+
+    private void adjustInventoryQuantities(Inventaire inventaire, int quantityChange, Etat etat) {
+        // Ajuster les quantités en fonction de l'état de l'article
+        if (Etat.CONFORME.equals(etat)) {
+            inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() + quantityChange);
+        } else {
+            inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + quantityChange);
+        }
+    }
+
+
+    private void verifyNotAlreadyCancelled(Vente vente, Long id) {
+        if (vente.isDeleted()) {
+            throw new IllegalStateException("La réception avec l'id: " + id + " a déjà été annulée.");
+        }
+    }
+
+    private Annulation createAnnulation(Vente receptionStock, String refAnnulation, String raison) {
+        Annulation annulation = new Annulation();
+        annulation.setRef(refAnnulation);
+        annulation.setRefOperation(receptionStock.getReference());
+        annulation.setDateAnnulation(LocalDate.now());
+        annulation.setRaison(raison);
+        return annulation;
+    }
+
+    private String genererRefAnnulation() {
+        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        int count = annulationRepository.countAnnulationForToday() + 1;
+        return "AN" + datePart + String.format("%04d", count);
     }
 
     private String generateReference() {

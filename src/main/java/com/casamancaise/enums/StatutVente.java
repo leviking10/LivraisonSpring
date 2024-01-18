@@ -1,6 +1,6 @@
 package com.casamancaise.enums;
 
-public enum EtatTransfert {
+public enum StatutVente {
     EN_COURS,
-    TERMINE
+    LIVREE
 }

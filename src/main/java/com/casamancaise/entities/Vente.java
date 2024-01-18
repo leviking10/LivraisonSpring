@@ -1,5 +1,6 @@
 package com.casamancaise.entities;
 
+import com.casamancaise.enums.StatutVente;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,4 +32,9 @@ public class Vente implements Serializable {
     @JoinColumn(name = "entrepot_id")
     private Entrepot entrepot;
     private LocalDate dateVente;
+    private boolean isDeleted;
+    @Enumerated(EnumType.STRING)
+    private StatutVente statut = StatutVente.EN_COURS;
+
+    private LocalDate datelivraison;
 }

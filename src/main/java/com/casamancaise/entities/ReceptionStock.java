@@ -28,7 +28,7 @@ public class ReceptionStock implements Serializable {
     private String quart; // Quart de travail ou session de production
     @Column(unique = true, nullable = false)
     private String reference;
-    private boolean estAnnulee;
+    private boolean isDeleted;
     @OneToMany(mappedBy = "receptionStock", cascade = CascadeType.ALL)
     private List<ReceptionDetail> receptionDetails;// Détails des articles reçus
 }

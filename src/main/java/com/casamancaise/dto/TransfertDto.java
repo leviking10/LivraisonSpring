@@ -24,6 +24,7 @@ public class TransfertDto {
     private EtatTransfert etat;
     private String reference;
     private LocalDate receptionDate;
+    private boolean isDeleted;
     // Liste des détails de transfert, représentée par des DTOs
     private List<TransferDetailsDto> transferDetails;
 }

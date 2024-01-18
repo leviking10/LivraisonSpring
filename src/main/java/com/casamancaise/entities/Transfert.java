@@ -45,5 +45,6 @@ public class Transfert implements Serializable {
     private Vehicule vehicule;
     @Enumerated(EnumType.STRING)
     private EtatTransfert etat;
+    private boolean isDeleted;
 
 }

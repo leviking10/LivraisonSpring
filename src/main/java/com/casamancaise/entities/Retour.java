@@ -36,7 +36,7 @@ public class Retour implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_vehicule", nullable = false)
     private Vehicule vehicule;
-
+    private boolean isDeleted;
     @OneToMany(mappedBy = "retour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailRetour> detailsRetours;
 }

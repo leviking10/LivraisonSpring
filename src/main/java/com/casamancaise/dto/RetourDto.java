@@ -23,6 +23,7 @@ public class RetourDto implements Serializable {
     private LocalDate dateRetour;
     private String raison;
     private Long vehiculeId;
+    private boolean isDeleted;
     private List<DetailRetourDto> detailsRetours;
 
 

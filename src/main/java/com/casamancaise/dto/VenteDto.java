@@ -21,5 +21,7 @@ public class VenteDto implements Serializable {
     private Long clientId; // L'ID du client
     private Long entrepotId; // L'ID de l'entrepot
     private LocalDate dateVente;
+    private boolean isDeleted;
+    private LocalDate datelivraison;
     private List<DetailVenteDto> detailVentes;
 }

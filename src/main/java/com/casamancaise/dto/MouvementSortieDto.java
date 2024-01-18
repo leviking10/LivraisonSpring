@@ -18,5 +18,6 @@ public class MouvementSortieDto {
     private LocalDate dateSortie;
     private String reference;
     private String motif;
+    private boolean isDeleted;
     private List<MouvementSortieDetailDto> detailsSortie;
 }

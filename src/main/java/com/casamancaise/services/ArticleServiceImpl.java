@@ -46,11 +46,11 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public ArticleDto updateArticle(Long id, ArticleDto articleDto) {
-        Article existingArticle = articleRepository.findById(id)
+        Article article = articleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Article not found with id: " + id));
-        articleMapper.updateArticleFromDto(articleDto, existingArticle);
-        existingArticle = articleRepository.save(existingArticle);
-        return articleMapper.toDto(existingArticle);
+        articleMapper.updateArticleFromDto(articleDto, article);
+        article = articleRepository.save(article);
+        return articleMapper.toDto(article);
     }
 
     @Override

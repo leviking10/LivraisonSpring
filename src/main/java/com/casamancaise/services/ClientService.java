@@ -15,5 +15,4 @@ public interface ClientService {
 
     void deleteClient(Long id);
 
-    boolean clientExistsWithCanalDistrib(Long clientId, Integer canalDistribId);
 }

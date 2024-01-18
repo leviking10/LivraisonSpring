@@ -1,4 +1,4 @@
-package com.casamancaise.exeptions;
+package com.casamancaise.myexeptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

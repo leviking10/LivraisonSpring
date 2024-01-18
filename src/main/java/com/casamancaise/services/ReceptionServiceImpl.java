@@ -11,6 +11,7 @@ import com.casamancaise.enums.Etat;
 import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.ReceptionDetailMapper;
 import com.casamancaise.mapping.ReceptionStockMapper;
+import com.casamancaise.myexeptions.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +28,7 @@ import java.util.Optional;
 public class ReceptionServiceImpl implements ReceptionService {
     private final ReceptionStockRepository receptionStockRepository;
     private final ReceptionStockMapper receptionStockMapper;
-
     private final ReceptionDetailMapper receptionDetailMapper;
-
     private final AnnulationRepository annulationRepository;
     private final MouvementRepository mouvementRepository;
     private final InventaireRepository inventaireRepository;
@@ -47,119 +46,110 @@ public class ReceptionServiceImpl implements ReceptionService {
     public ReceptionStockDto saveReception(ReceptionStockDto receptionStockDto) {
         log.info("Début de la méthode saveReception avec receptionStockDto: {}", receptionStockDto);
         LocalDate today = LocalDate.now();
+        // Validation de l'entrée (si nécessaire, ajoutez des validations supplémentaires)
+        if (receptionStockDto == null || receptionStockDto.getReceptionDetails() == null) {
+            throw new IllegalArgumentException("Les informations de réception sont manquantes ou incomplètes.");
+        }
         // Convertir DTO en entité
         ReceptionStock receptionStock = receptionStockMapper.toEntity(receptionStockDto);
-        receptionStock.setReference(generateReference());
+        String receptionReference = generateReference();
+        receptionStock.setReference(receptionReference);
         receptionStock.setDateReception(today);
-        receptionStock.setEstAnnulee(false);
-        // Associer les détails de réception à l'entité ReceptionStock
-        if (receptionStockDto.getReceptionDetails() != null && !receptionStockDto.getReceptionDetails().isEmpty()) {
-            receptionStock.getReceptionDetails().clear(); // Nettoyer les anciens détails si nécessaire
-            for (ReceptionDetailDto detailDto : receptionStockDto.getReceptionDetails()) {
-                log.debug("Traitement du ReceptionDetailDto : {}", detailDto);
-                ReceptionDetail detail = receptionDetailMapper.toEntity(detailDto);
-                detail.setReceptionStock(receptionStock); // Associer chaque détail à la réception
-                receptionStock.getReceptionDetails().add(detail);
-            }
+        receptionStock.setDeleted(false);
+        // Associer les détails de réception et mettre à jour l'inventaire en une seule boucle
+        receptionStock.getReceptionDetails().clear(); // Nettoyer les anciens détails si nécessaire
+        for (ReceptionDetailDto detailDto : receptionStockDto.getReceptionDetails()) {
+            log.debug("Traitement du ReceptionDetailDto : {}", detailDto);
+            ReceptionDetail detail = receptionDetailMapper.toEntity(detailDto);
+            detail.setReceptionStock(receptionStock); // Associer chaque détail à la réception
+            receptionStock.getReceptionDetails().add(detail);
+            // Mise à jour de l'inventaire et création de mouvements pour chaque détail
+            updateInventory(detail, receptionStock, false);
+            createMovement(detail, receptionStock, TypeMouvement.ENTREE, receptionReference);
         }
         // Sauvegarder l'entité de réception avec tous ses détails
         receptionStock = receptionStockRepository.save(receptionStock);
-
-        // Mettre à jour l'inventaire et créer les mouvements
-        if (receptionStockDto.getReceptionDetails() != null && !receptionStockDto.getReceptionDetails().isEmpty()) {
-            for (ReceptionDetail detail : receptionStock.getReceptionDetails()) {
-                // Mettre à jour l'inventaire et créer un mouvement pour chaque détail
-                updateInventoryAndCreateMovement(detail, receptionStock);
-            }
-        }
         log.debug("Entité ReceptionStock après la sauvegarde avec ID : {}", receptionStock.getId());
-        if (receptionStock.getId() == null) {
-            log.error("L'ID de ReceptionStock est null après la sauvegarde.");
-            throw new IllegalStateException("L'ID de ReceptionStock ne peut pas être null après la sauvegarde.");
-        }
         ReceptionStockDto savedReceptionStockDto = receptionStockMapper.toDto(receptionStock);
         log.info("Fin de la méthode saveReception avec savedReceptionStockDto : {}", savedReceptionStockDto);
         return savedReceptionStockDto;
     }
 
-    @Override
-    public void annulerReception(Long id, String raison) {
-        ReceptionStock receptionStock = receptionStockRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Réception non trouvée avec l'id: " + id));
-        // Vérifier si la réception a déjà été annulée
-        if (receptionStock.isEstAnnulee()) {
-            throw new IllegalStateException("La réception avec l'id: " + id + " a déjà été annulée.");
-        }
-        // Mettre à jour l'état de la réception pour indiquer qu'elle a été annulée
-        receptionStock.setEstAnnulee(true);
-        receptionStockRepository.save(receptionStock);
-        Annulation annulation = new Annulation();
-        String refAnnulation = genererRefAnnulation(); // Générer une seule référence pour l'annulation
-        annulation.setRef(refAnnulation);
-        annulation.setRefOperation(receptionStock.getReference()); // Assurez-vous que cette référence est correctement définie
-        annulation.setDateAnnulation(LocalDate.now());
-        annulation.setRaison(raison); // Assurez-vous que la raison est validée et échappée si nécessaire
-        annulationRepository.save(annulation);
-        // Inverser les effets de la réception sur l'inventaire
-        for (ReceptionDetail detail : receptionStock.getReceptionDetails()) {
-            inverserMouvementEtMettreAJourInventaire(detail);
-        }
-        // Log the action without user-controlled data
-        log.info("Réception ID {} a été annulée. Référence d'annulation générée: {}", id, refAnnulation);
+    private void createMovement(ReceptionDetail detail, ReceptionStock receptionStock, TypeMouvement typeMouvement, String reference) {
+        Mouvement mouvement = new Mouvement();
+        mouvement.setInventaire(getOrCreateInventory(detail, receptionStock));
+        mouvement.setDateMouvement(LocalDateTime.now());
+        mouvement.setQuantiteChange(typeMouvement == TypeMouvement.SORTIE ? -detail.getQuantity() : detail.getQuantity());
+        mouvement.setCondition(detail.getEtat().name());
+        mouvement.setType(typeMouvement);
+        mouvement.setReference(reference);
+        mouvementRepository.save(mouvement);
     }
 
+    private void updateInventory(ReceptionDetail detail, ReceptionStock receptionStock, boolean isCancellation) {
+        Inventaire inventaire = getOrCreateInventory(detail, receptionStock);
+        int quantityChange = isCancellation ? -detail.getQuantity() : detail.getQuantity();
+        adjustInventoryQuantities(inventaire, quantityChange, detail.getEtat());
+        inventaireRepository.save(inventaire);
+    }
 
-    private void inverserMouvementEtMettreAJourInventaire(ReceptionDetail detail) {
-        // Trouver l'inventaire associé et ajuster les quantités
-        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
-                        detail.getArticle().getIdArticle(), detail.getReceptionStock().getEntrepot().getIdEntre())
-                .orElseThrow(() -> new RuntimeException("Inventaire non trouvé pour l'article: "
-                        + detail.getArticle().getIdArticle() + " et entrepôt: "
-                        + detail.getReceptionStock().getEntrepot().getIdEntre()));
-        // Ajuster les quantités conformes et non conformes
-        int quantityChange = -detail.getQuantity();
-        if (Etat.CONFORME.equals(detail.getEtat())) {
+    private Inventaire getOrCreateInventory(ReceptionDetail detail, ReceptionStock receptionStock) {
+        // Logique pour obtenir l'inventaire existant ou en créer un nouveau
+        return inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
+                        detail.getArticle().getIdArticle(),
+                        receptionStock.getEntrepot().getIdEntre())
+                .orElseGet(() -> new Inventaire(null, receptionStock.getEntrepot(),
+                        detail.getArticle(), 0, 0));
+    }
+
+    private void adjustInventoryQuantities(Inventaire inventaire, int quantityChange, Etat etat) {
+        // Ajuster les quantités en fonction de l'état de l'article
+        if (Etat.CONFORME.equals(etat)) {
             inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() + quantityChange);
         } else {
             inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + quantityChange);
         }
-        inventaireRepository.save(inventaire);
-        // Créer un mouvement inverse pour annuler le mouvement précédent
-        Mouvement mouvementInverse = new Mouvement();
-        mouvementInverse.setInventaire(inventaire);
-        mouvementInverse.setDateMouvement(LocalDateTime.now());
-        mouvementInverse.setQuantiteChange(quantityChange);
-        mouvementInverse.setCondition(detail.getEtat().name());
-        mouvementInverse.setType(TypeMouvement.SORTIE);
-        mouvementInverse.setReference(detail.getReceptionStock().getReference());
-        mouvementRepository.save(mouvementInverse);
+    }
+
+    @Override
+    public void annulerReception(Long id, String raison) {
+        ReceptionStock receptionStock = receptionStockRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Réception non trouvée avec l'id: " + id));
+        verifyNotAlreadyCancelled(receptionStock, id);
+
+        receptionStock.setDeleted(true);
+        receptionStockRepository.save(receptionStock);
+        String refAnnulation = genererRefAnnulation();
+        Annulation annulation = createAnnulation(receptionStock, refAnnulation, raison);
+        annulationRepository.save(annulation);
+
+        receptionStock.getReceptionDetails().forEach(detail -> {
+            updateInventory(detail, receptionStock, true);
+            createMovement(detail, receptionStock, TypeMouvement.SORTIE, refAnnulation); // Utilisez refAnnulation ici
+        });
+
+        log.info("Réception ID {} a été annulée. Référence d'annulation générée: {}", id, refAnnulation);
+    }
+
+    private void verifyNotAlreadyCancelled(ReceptionStock receptionStock, Long id) {
+        if (receptionStock.isDeleted()) {
+            throw new IllegalStateException("La réception avec l'id: " + id + " a déjà été annulée.");
+        }
+    }
+
+    private Annulation createAnnulation(ReceptionStock receptionStock, String refAnnulation, String raison) {
+        Annulation annulation = new Annulation();
+        annulation.setRef(refAnnulation);
+        annulation.setRefOperation(receptionStock.getReference());
+        annulation.setDateAnnulation(LocalDate.now());
+        annulation.setRaison(raison);
+        return annulation;
     }
 
     private String genererRefAnnulation() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int count = annulationRepository.countAnnulationForToday() + 1;
         return "AN" + datePart + String.format("%04d", count);
-    }
-
-    private void updateInventoryAndCreateMovement(ReceptionDetail detail, ReceptionStock receptionStock) {
-        // Rechercher l'Inventaire existant ou en créer un nouveau si non trouvé
-        Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(detail.getArticle().getIdArticle(), receptionStock.getEntrepot().getIdEntre())
-                .orElseGet(() -> new Inventaire(null, receptionStock.getEntrepot(), detail.getArticle(), 0, 0));
-        int quantityChange = detail.getQuantity();
-        if (Etat.CONFORME.equals(detail.getEtat())) {
-            inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() + quantityChange);
-        } else {
-            inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + quantityChange);
-        }
-        inventaireRepository.save(inventaire);
-        Mouvement mouvement = new Mouvement();
-        mouvement.setInventaire(inventaire);
-        mouvement.setDateMouvement(LocalDateTime.now());
-        mouvement.setQuantiteChange(quantityChange);
-        mouvement.setCondition(detail.getEtat().name());
-        mouvement.setType(TypeMouvement.ENTREE);
-        mouvement.setReference(receptionStock.getReference());
-        mouvementRepository.save(mouvement);
     }
 
     private String generateReference() {
@@ -172,7 +162,7 @@ public class ReceptionServiceImpl implements ReceptionService {
     @Override
     public ReceptionStockDto getReceptionById(Long id) {
         ReceptionStock receptionStock = receptionStockRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Réception  non trouvée avec l'id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Réception non trouvée avec l'id: " + id));
         return receptionStockMapper.toDto(receptionStock);
     }
 

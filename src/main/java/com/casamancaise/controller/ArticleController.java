@@ -31,6 +31,7 @@ public class ArticleController {
     }
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<ArticleDto> getAllArticles() {
         return articleService.getAllArticles();
     }

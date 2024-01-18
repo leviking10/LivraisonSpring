@@ -1,7 +1,6 @@
 package com.casamancaise.services;
 
 import com.casamancaise.dto.TransfertDto;
-import com.casamancaise.enums.EtatTransfert;
 import com.casamancaise.enums.TypeDestinataire;
 
 import java.time.LocalDate;
@@ -19,9 +18,7 @@ public interface TransfertService {
 
     TransfertDto updateTransfertDestinataire(Long id, TypeDestinataire nouveauTypeDestinataire, Integer nouveauDestinataireId);
 
-    TransfertDto updateTransfertStatus(Long id, EtatTransfert etat);
-
-    TransfertDto annulerTransfert(String reference);
+    void annulerTransfert(Long id, String raison);
 
     Optional<TransfertDto> findByReference(String reference);
 }

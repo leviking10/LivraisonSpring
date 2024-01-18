@@ -17,4 +17,5 @@ public class ClientDto {
     private String telephone;
     private Integer canalDistribId;
     private Long employeeId;
+
 }

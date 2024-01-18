@@ -30,6 +30,7 @@ public class MouvementSortie implements Serializable {
     private String reference;
     @Column()
     private String motif;
+    private boolean isDeleted;
     @OneToMany(mappedBy = "mouvementSortie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MouvementSortieDetail> detailsSortie;
 

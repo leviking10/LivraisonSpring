@@ -1,4 +1,4 @@
-package com.casamancaise.exeptions;
+package com.casamancaise.myexeptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class apiexception {
     String message;
+
     HttpStatus status;
     LocalDateTime timestamp;
 }

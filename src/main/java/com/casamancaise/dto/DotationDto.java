@@ -20,5 +20,6 @@ public class DotationDto implements Serializable {
     private String destinataire;
     private LocalDate dateDotation;
     private String motif;
+    private boolean isDeleted;
     private List<DetailsDotationDto> detailsDotation;
 }

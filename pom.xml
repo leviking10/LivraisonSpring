@@ -148,6 +148,11 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.4.7</version>
 		</dependency>
+		<!--Liquibase est un outil puissant pour gérer les migrations de bases de données de manière contrôlée et automatisée -->
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>

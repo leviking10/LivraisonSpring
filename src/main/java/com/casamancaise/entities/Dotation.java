@@ -28,6 +28,7 @@ public class Dotation implements Serializable {
     private String destinataire;
     private LocalDate dateDotation;
     private String motif;
+    private boolean isDeleted;
     @OneToMany(mappedBy = "dotation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailsDotation> detailsDotation;
 }

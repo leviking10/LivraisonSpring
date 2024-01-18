@@ -19,6 +19,6 @@ public class ReceptionStockDto implements Serializable {
     private LocalDate dateReception;
     private String quart;
     private String reference;
-    private boolean estAnnulee;
+    private boolean isDeleted;
     private List<ReceptionDetailDto> receptionDetails;
 }
