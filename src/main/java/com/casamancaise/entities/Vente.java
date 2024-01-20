@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class Vente implements Serializable {
     private LocalDate dateVente;
     private boolean isDeleted;
     @Enumerated(EnumType.STRING)
-    private StatutVente statut = StatutVente.EN_COURS;
-
+    private StatutVente statut ;
+    private double poids;
     private LocalDate datelivraison;
 }

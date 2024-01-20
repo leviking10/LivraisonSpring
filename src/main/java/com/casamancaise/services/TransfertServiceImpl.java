@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,16 +31,18 @@ public class TransfertServiceImpl implements TransfertService {
     private final TransfertDetailsMapper transfertDetailsMapper;
     private final MouvementRepository mouvementRepository;
     private final ClientRepository clientRepository;
+    private final ArticleRepository articleRepository;
     private final InventaireRepository inventaireRepository;
     private final EntrepotRepository entrepotRepository;
     private AnnulationRepository annulationRepository;
 
-    public TransfertServiceImpl(TransfertRepository transfertRepository, TransfertMapper transfertMapper, TransfertDetailsMapper transfertDetailsMapper, MouvementRepository mouvementRepository, ClientRepository clientRepository, InventaireRepository inventaireRepository, EntrepotRepository entrepotRepository,AnnulationRepository annulationRepository) {
+    public TransfertServiceImpl(TransfertRepository transfertRepository, TransfertMapper transfertMapper, TransfertDetailsMapper transfertDetailsMapper, MouvementRepository mouvementRepository, ClientRepository clientRepository, ArticleRepository articleRepository, InventaireRepository inventaireRepository, EntrepotRepository entrepotRepository, AnnulationRepository annulationRepository) {
         this.transfertRepository = transfertRepository;
         this.transfertMapper = transfertMapper;
         this.transfertDetailsMapper = transfertDetailsMapper;
         this.mouvementRepository = mouvementRepository;
         this.clientRepository = clientRepository;
+        this.articleRepository = articleRepository;
         this.inventaireRepository = inventaireRepository;
         this.entrepotRepository = entrepotRepository;
         this.annulationRepository = annulationRepository;
@@ -58,11 +62,27 @@ public class TransfertServiceImpl implements TransfertService {
         transfert.setTransferDate(today);
         transfert.setEtat(EtatTransfert.EN_COURS);
         transfert.setDeleted(false);
+
+        // Initialiser le poids total avec BigDecimal pour la précision de l'arrondi
+        BigDecimal poidsTotal = BigDecimal.ZERO;
+
         // Associer les détails de transfert à l'entité Transfert et gérer l'inventaire
         transfert.getTransferDetails().clear();
         for (TransferDetailsDto detailDto : transfertDto.getTransferDetails()) {
             log.debug("Traitement du TransferDetailsDto: {}", detailDto);
             TransferDetails detail = transfertDetailsMapper.toEntity(detailDto);
+
+            // S'assurer que l'article est bien récupéré avec son poids
+            Article article = articleRepository.findById(detail.getArticle().getIdArticle())
+                    .orElseThrow(() -> new EntityNotFoundException("Article non trouvé avec l'ID: " + detail.getArticle().getIdArticle()));
+            detail.setArticle(article);
+
+            // Utiliser BigDecimal pour le calcul du poids
+            BigDecimal poidsUnitaire = BigDecimal.valueOf((article.getTonage() != null) ? article.getTonage() : 0.0);
+            int quantiteTotale = detail.getQuantite() + (detail.getBonus() != null ? detail.getBonus() : 0);
+            BigDecimal poidsPourDetail = poidsUnitaire.multiply(BigDecimal.valueOf(quantiteTotale));
+            poidsTotal = poidsTotal.add(poidsPourDetail);
+
             detail.setTransfert(transfert);
             transfert.getTransferDetails().add(detail);
 
@@ -70,6 +90,11 @@ public class TransfertServiceImpl implements TransfertService {
             updateInventory(detail, transfert, false);
             createMovement(detail, transfert, TypeMouvement.SORTIE, transfertReference);
         }
+
+        // Arrondir le poids total et le convertir en tonnes
+        BigDecimal poidsTotalEnTonnes = poidsTotal.divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP);
+        transfert.setPoids(poidsTotalEnTonnes.doubleValue());
+
         // Sauvegarder l'entité de transfert avec tous ses détails
         transfert = transfertRepository.save(transfert);
         log.debug("Entité Transfert après la sauvegarde avec ID: {}", transfert.getId());
@@ -237,6 +262,9 @@ public class TransfertServiceImpl implements TransfertService {
 
         Transfert transfert = transfertRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Impossible de faire cette réception car ce transfert n'existe pas."));
+        if (transfert.isDeleted()) {
+            throw new IllegalStateException("Le transfert a été annulé et ne peut plus être réceptionné.");
+        }
         if (!transfert.getEtat().equals(EtatTransfert.EN_COURS)) {
             log.warn("Tentative de réception d'un transfert qui n'est pas en cours. ID: {}", id);
             throw new IllegalStateException("Seuls les transferts en cours peuvent être reçus.");

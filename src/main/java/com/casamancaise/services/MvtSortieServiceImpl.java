@@ -13,6 +13,7 @@ import com.casamancaise.enums.Etat;
 import com.casamancaise.enums.TypeMouvement;
 import com.casamancaise.mapping.MouvementSortieDetailMapper;
 import com.casamancaise.mapping.MouvementSortieMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -86,15 +87,15 @@ public class MvtSortieServiceImpl implements MvtSortieService {
         return savedMouvementSortieDto;
     }
 
-    private void updateInventoryAndCreateMovement(MouvementSortieDetail detail, MouvementSortie mvtSortie) throws RuntimeException {
+    private void updateInventoryAndCreateMovement(MouvementSortieDetail detail, MouvementSortie mvtSortie) throws EntityNotFoundException {
         logger.debug("Mise à jour de l'inventaire et création d'un mouvement pour l'article ID : {}", detail.getArticle().getIdArticle());
         // Logique d'inventaire et de création de mouvement
         final Long articleId = detail.getArticle().getIdArticle();
         final Integer entrepotId = mvtSortie.getEntrepot().getIdEntre();
         Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(articleId, entrepotId)
-                .orElseThrow(() -> new RuntimeException("Stock non trouvé pour Article ID: " + articleId + " et Entrepot ID: " + entrepotId));
+                .orElseThrow(() -> new EntityNotFoundException("Stock non trouvé pour Article ID: " + articleId + " et Entrepot ID: " + entrepotId));
         if (inventaire.getQuantiteConforme() < detail.getQuantite())
-            throw new RuntimeException("Quantité de stock insuffisante  pour cette article ID: " + articleId);
+            throw new EntityNotFoundException("Quantité de stock insuffisante  pour cette article ID: " + articleId);
         inventaire.setQuantiteConforme(inventaire.getQuantiteConforme() - detail.getQuantite());
         inventaire.setQuantiteNonConforme(inventaire.getQuantiteNonConforme() + detail.getQuantite());
         inventaireRepository.save(inventaire);

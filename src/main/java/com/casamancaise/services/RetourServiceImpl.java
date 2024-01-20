@@ -47,40 +47,38 @@ public class RetourServiceImpl implements RetourService {
         log.info("Début de la méthode saveRetour avec retourDto: {}", retourDto);
         LocalDate today = LocalDate.now();
 
-        // Initialiser l'entité de retour avec les données de base
         Retour retour = retourMapper.toEntity(retourDto);
         retour.setDateRetour(today);
         retour.setReference(generateReference());
         retour.setDeleted(false);
 
-        // Traiter le retour en fonction du type et du statut de l'opération
         if (retourDto.getTypeRetour() == TypeRetour.VENTE) {
             Vente vente = venteRepository.findById(retourDto.getOperationId())
                     .orElseThrow(() -> new EntityNotFoundException("Vente non trouvée pour l'ID: " + retourDto.getOperationId()));
+            if (vente.isDeleted()) {
+                throw new IllegalStateException("La vente associée  a été supprimée.");
+            }
             if (vente.getStatut() != StatutVente.LIVREE) {
-                throw new IllegalStateException("La vente n'est pas terminée, impossible de procéder au retour.");
+                throw new IllegalStateException("La vente  n'est pas terminée.");
             }
             traiterRetourVente(retourDto);
         } else if (retourDto.getTypeRetour() == TypeRetour.TRANSFERT) {
             Transfert transfert = transfertRepository.findById(retourDto.getOperationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Transfert non trouvé pour l'ID: " + retourDto.getOperationId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Transfert non trouvé."));
+            if (transfert.isDeleted()) {
+                throw new IllegalStateException("Le transfert associé a été supprimé.");
+            }
             if (transfert.getEtat() != EtatTransfert.TERMINE) {
-                throw new IllegalStateException("Le transfert n'est pas terminé, impossible de procéder au retour.");
+                throw new IllegalStateException("Le transfert n'est pas terminé.");
             }
             traiterRetourTransfert(retourDto);
         }
 
-        // Vérifier les quantités et l'existence des articles avant de traiter les détails
-        verifierQuantitesRetournees(retourDto); // Utilisez le DTO pour la vérification
-
-        // Après la vérification, traiter les détails de retour
+        verifierQuantitesRetournees(retourDto);
         traiterDetailsRetour(retour, retourDto.getDetailsRetours());
-
-        // Maintenant que les vérifications sont faites, mettre à jour l'inventaire et créer les mouvements
         majInventaire(retourDto);
         creerMouvements(retour);
 
-        // Enregistrer l'entité de retour après toutes les vérifications et traitements
         retour = retourRepository.save(retour);
         if (retour.getId() == null) {
             log.error("L'ID de Retour est null après la sauvegarde.");
@@ -89,6 +87,7 @@ public class RetourServiceImpl implements RetourService {
 
         return retourMapper.toDto(retour);
     }
+
 
     private void verifierQuantitesRetournees(RetourDto retourDto) {
         for (DetailRetourDto detailRetourDto : retourDto.getDetailsRetours()) {
@@ -169,17 +168,21 @@ public class RetourServiceImpl implements RetourService {
         if (retour.getTypeRetour() == TypeRetour.VENTE) {
             Vente vente = venteRepository.findById(retour.getOperationId())
                     .orElseThrow(() -> new RuntimeException("Vente non trouvée avec l'id: " + retour.getOperationId()));
-            if (vente.getStatut() != StatutVente.LIVREE) {
-                throw new IllegalStateException("La vente associée n'est pas terminée, annulation du retour impossible.");
+            if (vente.isDeleted()) {
+                throw new IllegalStateException("Impossible d'annuler le retour car la vente associée a été supprimée.");
             }
-
+            if (vente.getStatut() != StatutVente.LIVREE) {
+                throw new IllegalStateException("Impossible d'annuler le retour car la vente associée est toujours en cours de traitement.");
+            }
         } else if (retour.getTypeRetour() == TypeRetour.TRANSFERT) {
             Transfert transfert = transfertRepository.findById(retour.getOperationId())
                     .orElseThrow(() -> new RuntimeException("Transfert non trouvé avec l'id: " + retour.getOperationId()));
-            if (transfert.getEtat() != EtatTransfert.TERMINE) {
-                throw new IllegalStateException("Le transfert associé n'est pas terminé, annulation du retour impossible.");
+            if (transfert.isDeleted()) {
+                throw new IllegalStateException("Impossible d'annuler le retour car le transfert associé a été supprimé.");
             }
-
+            if (transfert.getEtat() != EtatTransfert.TERMINE) {
+                throw new IllegalStateException("Impossible d'annuler le retour car le transfert associé est toujours en cours de traitement.");
+            }
         }
         retour.setDeleted(true);
         retourRepository.save(retour);
@@ -283,7 +286,6 @@ public class RetourServiceImpl implements RetourService {
                             detail.getArticle().getIdArticle(), retour.getEntrepot().getIdEntre())
                     .orElseThrow(() -> new EntityNotFoundException("Inventaire non trouvé pour l'article ID: "
                             + detail.getArticle().getIdArticle() + " et entrepôt ID: " + retour.getEntrepot().getIdEntre()));
-
             Mouvement mouvement = new Mouvement();
             mouvement.setInventaire(inventaire);
             mouvement.setDateMouvement(LocalDateTime.now());

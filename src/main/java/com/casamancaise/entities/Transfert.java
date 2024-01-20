@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -45,6 +46,7 @@ public class Transfert implements Serializable {
     private Vehicule vehicule;
     @Enumerated(EnumType.STRING)
     private EtatTransfert etat;
+    private double poids;
     private boolean isDeleted;
 
 }

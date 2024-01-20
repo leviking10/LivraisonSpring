@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class TransfertDto {
     private String reference;
     private LocalDate receptionDate;
     private boolean isDeleted;
+    private double poids;
     // Liste des détails de transfert, représentée par des DTOs
     private List<TransferDetailsDto> transferDetails;
 }

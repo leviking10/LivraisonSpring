@@ -11,26 +11,26 @@ import java.time.LocalDateTime;
 public class APIExceptionHandler {
 
     @ExceptionHandler(value = {RequestException.class})
-    public ResponseEntity<apiexception> handleRequestException(RequestException e) {
-        apiexception exception = new apiexception(e.getMessage(), e.getStatus(), LocalDateTime.now());
+    public ResponseEntity<ApiException> handleRequestException(RequestException e) {
+        ApiException exception = new ApiException(e.getMessage(), e.getStatus(), LocalDateTime.now());
         return new ResponseEntity<>(exception, e.getStatus());
     }
 
     @ExceptionHandler(value = {EntityNotFoundException.class})
-    public ResponseEntity<apiexception> handleEntityNotFoundException(EntityNotFoundException e) {
-        apiexception exception = new apiexception(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
+    public ResponseEntity<ApiException> handleEntityNotFoundException(EntityNotFoundException e) {
+        ApiException exception = new ApiException(e.getMessage(), HttpStatus.NOT_FOUND, LocalDateTime.now());
         return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {NumberFormatException.class})
-    public ResponseEntity<apiexception> handleNumberFormatException(NumberFormatException e) {
-        apiexception exception = new apiexception(HttpStatus.BAD_REQUEST.getReasonPhrase(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    public ResponseEntity<ApiException> handleNumberFormatException(NumberFormatException e) {
+        ApiException exception = new ApiException(HttpStatus.BAD_REQUEST.getReasonPhrase(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
         return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<apiexception> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        apiexception exception = new apiexception("the input provided is invalid", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+    public ResponseEntity<ApiException> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        ApiException exception = new ApiException("the input provided is invalid", HttpStatus.BAD_REQUEST, LocalDateTime.now());
         return new ResponseEntity<>(exception, HttpStatus.BAD_REQUEST);
     }
 

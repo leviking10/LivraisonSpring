@@ -34,6 +34,4 @@ public class DetailVente implements Serializable {
     @Enumerated(EnumType.STRING)
     @NotNull
     private Etat etat = Etat.CONFORME;
-    private BigDecimal poids;
-
 }

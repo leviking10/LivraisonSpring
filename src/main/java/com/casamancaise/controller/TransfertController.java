@@ -66,18 +66,18 @@ public class TransfertController {
         // Vérifiez que la raison n'est pas trop longue et ne contient que des caractères autorisés
         return raison.length() <= 100 && raison.matches("[\\p{Alnum} .,;!'éèêëàâäôöûüçÉÈÊËÀÂÄÔÖÛÜÇ\"]+");
     }
-    @PatchMapping("/{id}/recevoir")
-    public ResponseEntity<TransfertDto> recevoirTransfert(@PathVariable Long id, @RequestBody LocalDate dateLivraison) {
+    @PatchMapping("/recevoir/{id}")
+    public ResponseEntity<Object> recevoirTransfert(@PathVariable Long id, @RequestBody LocalDate dateLivraison) {
         try {
             TransfertDto updatedTransfert = transfertService.recevoirTransfert(id, dateLivraison);
             return ResponseEntity.ok(updatedTransfert);
         } catch (RuntimeException e) {
             // Gérer les exceptions
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    @PatchMapping("/{id}/destinataire")
+    @PatchMapping("/destinataire/{id}")
     public ResponseEntity<Object> updateTransfertDestinataire(@PathVariable Long id, @RequestBody UpdateTransfertDestinataireDto updateDto) {
         try {
             TransfertDto updatedTransfert = transfertService.updateTransfertDestinataire(id, updateDto.getNouveauTypeDestinataire(), updateDto.getNouveauDestinataireId());

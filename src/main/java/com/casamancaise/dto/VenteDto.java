@@ -1,5 +1,6 @@
 package com.casamancaise.dto;
 
+import com.casamancaise.enums.StatutVente;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,5 +25,7 @@ public class VenteDto implements Serializable {
     private LocalDate dateVente;
     private boolean isDeleted;
     private LocalDate datelivraison;
+    private StatutVente statut;
+    private double poids;
     private List<DetailVenteDto> detailVentes;
 }

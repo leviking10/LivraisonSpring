@@ -36,7 +36,7 @@ public class Article implements Serializable {
 
     @Column(name = "tonage", length = 20, nullable = false)
     private Double tonage;
-    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ReceptionDetail> receptionDetails;
 
     public Article(Long idArticle) {

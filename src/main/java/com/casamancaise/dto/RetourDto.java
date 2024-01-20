@@ -26,5 +26,4 @@ public class RetourDto implements Serializable {
     private boolean isDeleted;
     private List<DetailRetourDto> detailsRetours;
 
-
 }

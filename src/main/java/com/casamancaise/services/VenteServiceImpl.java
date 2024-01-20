@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,48 +34,79 @@ public class VenteServiceImpl implements VenteService {
     private final MouvementRepository mouvementRepository;
     private final InventaireRepository inventaireRepository;
     private final ClientRepository clientRepository;
+    private final ArticleRepository articleRepository;
     private final DetailVenteMapper detailVenteMapper;
     private final AnnulationRepository annulationRepository;
 
-    public VenteServiceImpl(VenteRepository venteRepository, VenteMapper venteMapper, MouvementRepository mouvementRepository, InventaireRepository inventaireRepository, AnnulationRepository annulationRepository, ClientRepository clientRepository, DetailVenteMapper detailVenteMapper) {
+    public VenteServiceImpl(VenteRepository venteRepository, VenteMapper venteMapper, MouvementRepository mouvementRepository, InventaireRepository inventaireRepository, AnnulationRepository annulationRepository, ClientRepository clientRepository, ArticleRepository articleRepository, DetailVenteMapper detailVenteMapper) {
         this.venteRepository = venteRepository;
         this.venteMapper = venteMapper;
         this.mouvementRepository = mouvementRepository;
         this.inventaireRepository = inventaireRepository;
         this.annulationRepository = annulationRepository;
         this.clientRepository = clientRepository;
+        this.articleRepository = articleRepository;
         this.detailVenteMapper = detailVenteMapper;
     }
-
     @Override
     public VenteDto saveVente(VenteDto venteDto) {
         logger.info("Début de la méthode saveVente avec venteDto: {}", venteDto);
         LocalDate today = LocalDate.now();
+
         // Vérifier l'existence du client
         if (!clientRepository.existsById(venteDto.getClientId())) {
-            throw new EntityNotFoundException("Ce Client avec l'ID: " + venteDto.getClientId() + "n'existe pas");
+            throw new EntityNotFoundException("Ce Client avec l'ID: " + venteDto.getClientId() + " n'existe pas");
         }
-// Vérifier la disponibilité du stock avant de continuer
+
+        // Vérifier la disponibilité du stock avant de continuer
         if (!verifierDisponibiliteArticle(venteDto)) {
             logger.error("Vente non réalisée en raison d'un stock insuffisant.");
             throw new IllegalStateException("Stock insuffisant pour réaliser la vente.");
         }
+
         // Convertir DTO en entité
         Vente vente = venteMapper.toEntity(venteDto);
         vente.setReference(generateReference());
         vente.setDateVente(today);
         vente.setStatut(StatutVente.EN_COURS);
         vente.setDeleted(false);
-        // Associer les détails de vente et mettre à jour l'inventaire
+
+        // Initialiser le poids total avec BigDecimal pour la précision de l'arrondi
+        BigDecimal poidsTotal = BigDecimal.ZERO;
+
+        // Traiter chaque détail de la vente
         vente.getDetailVentes().clear(); // Nettoyer les anciens détails si nécessaire
         for (DetailVenteDto detailDto : venteDto.getDetailVentes()) {
-            logger.debug("Traitement du DetailVenteDto : {}", detailDto);
             DetailVente detail = detailVenteMapper.toEntity(detailDto);
             detail.setVente(vente); // Associer chaque détail à la vente
             vente.getDetailVentes().add(detail);
+
+            // Vérifier et récupérer le tonnage de l'article
+            if (detail.getArticle() == null || detail.getArticle().getIdArticle() == null) {
+                logger.error("L'article pour DetailVente est null ou n'a pas d'ID valide.");
+                throw new EntityNotFoundException("L'article pour DetailVente est manquant ou incorrect.");
+            }
+
+            Article article = articleRepository.findById(detail.getArticle().getIdArticle())
+                    .orElseThrow(() -> new EntityNotFoundException("Article avec l'ID: " + detail.getArticle().getIdArticle() + " n'existe pas."));
+
+            Double tonage = article.getTonage();
+            logger.info("Tonnage récupéré pour l'article ID {}: {}", article.getIdArticle(), tonage);
+
+            // Utiliser BigDecimal pour le calcul du poids
+            BigDecimal poidsUnitaire = BigDecimal.valueOf((tonage != null) ? tonage : 0.0);
+            int quantiteTotale = detail.getQuantity() + (detail.getBonus() != null ? detail.getBonus() : 0);
+            BigDecimal poidsPourDetail = poidsUnitaire.multiply(BigDecimal.valueOf(quantiteTotale));
+            poidsTotal = poidsTotal.add(poidsPourDetail);
+
             // Mise à jour de l'inventaire et création de mouvements pour chaque détail
             updateInventoryAndCreateMovement(detail, vente);
         }
+
+        // Arrondir le poids total et le convertir en tonnes
+        BigDecimal poidsTotalEnTonnes = poidsTotal.divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP);
+        vente.setPoids(poidsTotalEnTonnes.doubleValue());
+
         // Sauvegarder l'entité de vente avec tous ses détails
         vente = venteRepository.save(vente);
         logger.debug("Entité Vente après la sauvegarde avec ID : {}", vente.getId());
@@ -81,6 +114,7 @@ public class VenteServiceImpl implements VenteService {
         logger.info("Fin de la méthode saveVente avec savedVenteDto : {}", savedVenteDto);
         return savedVenteDto;
     }
+
 
     @Override
     public VenteDto updateVente(Long venteId, Long nouveauClientId) {
