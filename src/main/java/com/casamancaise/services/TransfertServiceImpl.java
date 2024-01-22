@@ -51,7 +51,9 @@ public class TransfertServiceImpl implements TransfertService {
     public TransfertDto saveTransfert(TransfertDto transfertDto) {
         log.info("Début de la méthode saveTransfert avec transfertDto: {}", transfertDto);
         LocalDate today = LocalDate.now();
-
+        if (!verifierDisponibiliteStock(transfertDto)) {
+            throw new IllegalStateException("Stock insuffisant pour réaliser le transfert.");
+        }
         // Vérifier l'existence du destinataire avant de continuer
         verifierExistenceDestinataire(transfertDto.getTypeDestinataire(), transfertDto.getDestinataireId());
 
@@ -78,7 +80,7 @@ public class TransfertServiceImpl implements TransfertService {
             detail.setArticle(article);
 
             // Utiliser BigDecimal pour le calcul du poids
-            BigDecimal poidsUnitaire = BigDecimal.valueOf((article.getTonage() != null) ? article.getTonage() : 0.0);
+            BigDecimal poidsUnitaire = BigDecimal.valueOf((article.getTonage()));
             int quantiteTotale = detail.getQuantite() + (detail.getBonus() != null ? detail.getBonus() : 0);
             BigDecimal poidsPourDetail = poidsUnitaire.multiply(BigDecimal.valueOf(quantiteTotale));
             poidsTotal = poidsTotal.add(poidsPourDetail);
@@ -102,6 +104,22 @@ public class TransfertServiceImpl implements TransfertService {
         TransfertDto savedTransfertDto = transfertMapper.toDto(transfert);
         log.info("Fin de la méthode saveTransfert avec savedTransfertDto: {}", savedTransfertDto);
         return savedTransfertDto;
+    }
+    public boolean verifierDisponibiliteStock(TransfertDto transfertDto) {
+        for (TransferDetailsDto detailDto : transfertDto.getTransferDetails()) {
+            int quantiteDemandee = detailDto.getQuantite() + (detailDto.getBonus() != null ? detailDto.getBonus() : 0);
+            Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
+                            detailDto.getArticleId(), Math.toIntExact(transfertDto.getFromEntrepotId()))
+                    .orElse(null);
+
+            if (inventaire == null || inventaire.getQuantiteConforme() < quantiteDemandee) {
+                log.warn("Stock insuffisant pour l'article ID: {} dans l'entrepôt ID: {}. Requis: {}, Disponible: {}",
+                        detailDto.getArticleId(), transfertDto.getFromEntrepotId(), quantiteDemandee,
+                        inventaire != null ? inventaire.getQuantiteConforme() : "Inventaire inexistant");
+                return false;
+            }
+        }
+        return true;
     }
 
     private void verifierExistenceDestinataire(TypeDestinataire typeDestinataire, Integer destinataireId) throws RuntimeException {

@@ -11,10 +11,10 @@ class LivraisonApplicationTests {
 
 	@Test
 	void contextLoads() {
+		testRetrieveArticle();
 	}
 	@Autowired
 	private ArticleRepository articleRepository;
-	@Test
 	public void testRetrieveArticle() {
 		Article article = articleRepository.findById(1L).orElse(null);
 		if (article != null) {

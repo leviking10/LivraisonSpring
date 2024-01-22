@@ -9,10 +9,12 @@ import org.mapstruct.Mapping;
 public interface VenteMapper extends EntityMapper<VenteDto, Vente> {
     @Mapping(source = "client.id", target = "clientId")
     @Mapping(source = "entrepot.idEntre", target = "entrepotId")
+    @Mapping(target = "vehiculeId", source = "vehicule.idVehi")
     VenteDto toDto(Vente vente);
 
     @Mapping(source = "clientId", target = "client")
     @Mapping(source = "entrepotId", target = "entrepot")
+    @Mapping(target = "vehicule.idVehi", source = "vehiculeId")
     Vente toEntity(VenteDto venteDto);
 
     default Vente mapToVente(Long id) {

@@ -52,7 +52,7 @@ import static org.mockito.BDDMockito.*;
     }
 
     @Test
-    public void getArticleByIdTest() {
+    void getArticleByIdTest() {
         // Arrange
         Long id = 1L;
         ArticleDto articleDto = new ArticleDto(id, "CPACK1L5", "Pack de 1.5L", 2000.0, "Pack de 6", 3000.0, 9.2);
@@ -103,7 +103,7 @@ import static org.mockito.BDDMockito.*;
     }
 
     @Test
-    public void updateArticleTest() {
+     void updateArticleTest() {
         // Arrange
         Long id = 1L;
         ArticleDto articleDto = new ArticleDto(id, "CPACK1L5", "Pack de 1.5L", 2000.0, "Pack de 6", 3000.0, 9.2);
@@ -125,7 +125,7 @@ import static org.mockito.BDDMockito.*;
     }
 
     @Test
-    public void deleteArticleTest() {
+    void deleteArticleTest() {
         // Arrange
         Long id = 1L;
         willDoNothing().given(articleRepository).deleteById(id);

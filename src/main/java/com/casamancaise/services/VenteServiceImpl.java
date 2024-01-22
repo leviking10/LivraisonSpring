@@ -90,11 +90,11 @@ public class VenteServiceImpl implements VenteService {
             Article article = articleRepository.findById(detail.getArticle().getIdArticle())
                     .orElseThrow(() -> new EntityNotFoundException("Article avec l'ID: " + detail.getArticle().getIdArticle() + " n'existe pas."));
 
-            Double tonage = article.getTonage();
-            logger.info("Tonnage récupéré pour l'article ID {}: {}", article.getIdArticle(), tonage);
+            double pu = article.getTonage();
+            logger.info("Tonnage récupéré pour l'article ID {}: {}", article.getIdArticle(), pu);
 
             // Utiliser BigDecimal pour le calcul du poids
-            BigDecimal poidsUnitaire = BigDecimal.valueOf((tonage != null) ? tonage : 0.0);
+            BigDecimal poidsUnitaire = BigDecimal.valueOf((pu));
             int quantiteTotale = detail.getQuantity() + (detail.getBonus() != null ? detail.getBonus() : 0);
             BigDecimal poidsPourDetail = poidsUnitaire.multiply(BigDecimal.valueOf(quantiteTotale));
             poidsTotal = poidsTotal.add(poidsPourDetail);
@@ -150,12 +150,17 @@ public class VenteServiceImpl implements VenteService {
     public boolean verifierDisponibiliteArticle(VenteDto venteDto) {
         logger.info("Vérification de la disponibilité du stock pour la vente ID: {}", venteDto.getId());
         for (DetailVenteDto detailVenteDto : venteDto.getDetailVentes()) {
+            // Calcul de la quantité totale incluant les bonus
+            int quantiteTotale = detailVenteDto.getQuantity() + (detailVenteDto.getBonus() != null ? detailVenteDto.getBonus() : 0);
+
             Inventaire inventaire = inventaireRepository.findByArticleIdArticleAndEntrepotIdEntre(
                             detailVenteDto.getArticleId(), Math.toIntExact(venteDto.getEntrepotId()))
                     .orElse(null);
-            if (inventaire == null || inventaire.getQuantiteConforme() < detailVenteDto.getQuantity()) {
-                logger.warn("Stock insuffisant pour l'article ID: {} dans l'entrepôt ID: {}",
-                        detailVenteDto.getArticleId(), venteDto.getEntrepotId());
+
+            // Vérifier si l'inventaire est null ou si la quantité conforme est inférieure à la quantité totale requise
+            if (inventaire == null || inventaire.getQuantiteConforme() < quantiteTotale) {
+                logger.warn("Stock insuffisant pour l'article ID: {} dans l'entrepôt ID: {}. Requis: {}, Disponible: {}",
+                        detailVenteDto.getArticleId(), venteDto.getEntrepotId(), quantiteTotale, inventaire != null ? inventaire.getQuantiteConforme() : "Inventaire inexistant");
                 return false;
             }
         }

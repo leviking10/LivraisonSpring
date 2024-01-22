@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,5 +26,6 @@ public class VenteDto implements Serializable {
     private LocalDate datelivraison;
     private StatutVente statut;
     private double poids;
+    private Long vehiculeId;
     private List<DetailVenteDto> detailVentes;
 }

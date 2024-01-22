@@ -26,16 +26,16 @@ public class Article implements Serializable {
     private String libArti;
 
     @Column(name = "cout_prod", length = 20, nullable = false)
-    private Double coutProd;
+    private double coutProd;
 
     @Column(name = "unite", length = 20, nullable = false)
     private String unite;
 
     @Column(name = "marge_secu", length = 20, nullable = false)
-    private Double margeSecu;
+    private double margeSecu;
 
     @Column(name = "tonage", length = 20, nullable = false)
-    private Double tonage;
+    private double tonage;
     @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ReceptionDetail> receptionDetails;
 

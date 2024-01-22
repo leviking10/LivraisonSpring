@@ -2,12 +2,16 @@ package com.casamancaise.articles.controller;
 import com.casamancaise.controller.ArticleController;
 import com.casamancaise.dto.ArticleDto;
 import com.casamancaise.services.ArticleService;
+import com.casamancaise.services.ArticleServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -26,12 +30,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ArticleControllerTest {
+@Tag("ArticleControllerTest")
+@DisplayName("Testing du controller des articles")
+class ArticleControllerTest {
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     @Mock
-    private ArticleService articleService;
+    private ArticleServiceImpl articleService;
 
     @InjectMocks
     private ArticleController articleController;
@@ -39,11 +45,11 @@ public class ArticleControllerTest {
     @BeforeEach
     public void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(articleController).build();
-          objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper();
     }
 
     @Test
-    public void createArticleTest() throws Exception {
+    void createArticleTest() throws Exception {
         // Given
         ArticleDto articleDto = new ArticleDto(1L, "CPACK1L5", "Pack de 1.5L", 2000.0, "Pack de 6", 3000.0, 9.2);
         given(articleService.createArticle(any(ArticleDto.class))).willReturn(articleDto);
@@ -64,7 +70,7 @@ public class ArticleControllerTest {
         verify(articleService).createArticle(any(ArticleDto.class));
     }
     @Test
-    public void getArticleByIdTest() throws Exception {
+    void getArticleByIdTest() throws Exception {
         // Given
         ArticleDto articleDto = new ArticleDto(1L, "CPACK1L5", "Pack de 1.5L", 2000.0, "Pack de 6", 3000.0, 9.2);
         given(articleService.getArticleById(1L)).willReturn(articleDto);
@@ -78,7 +84,7 @@ public class ArticleControllerTest {
         verify(articleService).getArticleById(1L);
     }
     @Test
-    public void getAllArticlesTest() throws Exception {
+    void getAllArticlesTest() throws Exception {
         // Given
         ArticleDto articleDto = new ArticleDto(1L, "CPACK1L5", "Pack de 1.5L", 2000.0, "Pack de 6", 3000.0, 9.2);
         List<ArticleDto> allArticles = Arrays.asList(articleDto);
@@ -94,7 +100,7 @@ public class ArticleControllerTest {
     }
 
     @Test
-    public void updateArticleTest() throws Exception {
+    void updateArticleTest() throws Exception {
         // Given
         ArticleDto articleDto = new ArticleDto(1L, "CPACK1L5", "Pack de 1.5L", 100.0, "Pack de 6", 3000.0, 9.2);
         given(articleService.updateArticle(eq(1L), any(ArticleDto.class))).willReturn(articleDto);
@@ -111,7 +117,7 @@ public class ArticleControllerTest {
     }
 
     @Test
-    public void deleteArticleTest() throws Exception {
+    void deleteArticleTest() throws Exception {
         // Given
         willDoNothing().given(articleService).deleteArticle(1L);
 

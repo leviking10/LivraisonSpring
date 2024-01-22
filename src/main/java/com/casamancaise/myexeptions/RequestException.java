@@ -8,6 +8,6 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RequestException extends RuntimeException {
-    String message;
+  String message;
     HttpStatus status;
 }
