@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/articles")
-@CrossOrigin("*") //ou ("http://localhost:4200) port par default de Angular
 public class ArticleController {
     private final ArticleService articleService;
 
