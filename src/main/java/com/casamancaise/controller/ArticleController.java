@@ -42,7 +42,7 @@ public class ArticleController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void deleteArticle(@PathVariable Long id) {
         articleService.deleteArticle(id);
     }

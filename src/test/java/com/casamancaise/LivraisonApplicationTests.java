@@ -16,7 +16,7 @@ class LivraisonApplicationTests {
 	@Autowired
 	private ArticleRepository articleRepository;
 	public void testRetrieveArticle() {
-		Article article = articleRepository.findById(1L).orElse(null);
+		Article article = articleRepository.findById(2L).orElse(null);
 		if (article != null) {
 			System.out.println("Tonnage: " + article.getTonage());
 		} else {

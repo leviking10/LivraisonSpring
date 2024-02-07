@@ -19,12 +19,12 @@ public class ArticleDto {
     @NotNull(message = "Le champ libellé ne peut pas être vide.")
     private String libArti;
     @NotNull(message = "Le champ cout de production ne peut pas être vide.")
-    private double coutProd;
+    private Double coutProd;
     @NotNull(message = "Le champ unité ne peut pas être vide.")
     private String unite;
     @NotNull(message = "Le champ marge securitaire ne peut pas être vide.")
-    private double margeSecu;
+    private Double margeSecu;
     @NotNull(message = "Le champ tonage ne peut pas être vide.")
-    private double tonage;
+    private Double tonage;
 
 }
