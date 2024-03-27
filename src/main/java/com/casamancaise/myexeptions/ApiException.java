@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ApiException {
     String message;
-
     HttpStatus status;
     LocalDateTime timestamp;
 }
